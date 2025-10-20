@@ -1,21 +1,23 @@
-# 🍏 Apple Retail Sales Project
 
-A data analysis and forecasting project using Apple retail sales data.
+---
 
-## 📁 Structure
-- `data/raw` — original CSVs
-- `data/processed` — cleaned/merged data
-- `notebooks/` — EDA and modeling
-- `scripts/` — reusable Python scripts
-- `app/` — optional Streamlit dashboard
-- `reports/` — figures and reports
+## 🧠 Datasets Overview
 
-## 🚀 Usage
+These CSV files come from the [Apple Retail Sales Dataset](https://www.kaggle.com/datasets/amangarg08/apple-retail-sales-dataset).
+
+| File | Description | Shape |
+|------|--------------|--------|
+| `Products.csv` | Product info (ID, category, price, etc.) | (89, 5) |
+| `Sales.csv` | Sales transactions | (1,040,200, 5) |
+| `Warranty.csv` | Warranty claims and repair statuses | (30,000, 4) |
+| `Stores.csv` | Apple store locations | (75, 4) |
+| `Category.csv` | Product category mapping | (10, 2) |
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone the Repository
 ```bash
-pip install -r requirements.txt
-python scripts/data_loader.py
-```
-
-## 👥 Team
-- Ali Sherif Salaheldin
-- [Add teammate’s name here]
+git clone https://github.com/AliSherif2303/Apple-Retail-Sales-Forcasting.git
+cd Apple-Retail-Sales-Forcasting
