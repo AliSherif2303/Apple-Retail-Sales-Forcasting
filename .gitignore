@@ -1,6 +1,38 @@
+# --- Python ---
 __pycache__/
 *.pyc
-data/processed/
-reports/figures/
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter Notebooks ---
 .ipynb_checkpoints/
+
+# --- Environment variables ---
 .env
+.env.*
+
+# --- Data folders ---
+data/raw/
+data/processed/
+data/temp/
+data/interim/
+reports/figures/
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Streamlit cache ---
+.streamlit/
+
+# --- OS files ---
+Thumbs.db
