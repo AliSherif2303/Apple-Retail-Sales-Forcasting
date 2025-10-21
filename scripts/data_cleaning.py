@@ -14,4 +14,5 @@ def merge_all(datasets: dict):
         .merge(category, left_on='Category_ID', right_on='category_id', how='left')
         .merge(warranty, on='sale_id', how='left')
     )
+    
     return df
