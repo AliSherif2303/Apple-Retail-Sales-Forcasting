@@ -21,7 +21,7 @@ ENV/
 
 # --- Data folders ---
 data/raw/
-data/processed/
+#data/processed/
 data/temp/
 data/interim/
 reports/figures/
