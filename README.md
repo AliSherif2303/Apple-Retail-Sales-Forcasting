@@ -42,7 +42,7 @@ Run the Streamlit app
 
 streamlit run app/main.py
 
-##📊 Project Workflow
+## 📊 Project Workflow
 
    Exploratory Data Analysis (EDA)
    
@@ -74,7 +74,7 @@ streamlit run app/main.py
    
    Allows users to explore forecasts by region, product, and time period.
    
-##📈 Example Insights
+## 📈 Example Insights
 
    📅 Seasonal peaks in Q4 due to holiday sales.
    
@@ -82,7 +82,7 @@ streamlit run app/main.py
    
    📱 Product categories showing strongest year-over-year growth.
 
-##🧠 Tech Stack
+## 🧠 Tech Stack
 
    Languages: Python
    
@@ -92,7 +92,7 @@ streamlit run app/main.py
    
    Version Control: Git, GitHub
    
-##🚀 Future Enhancements
+## 🚀 Future Enhancements
 
    Integrate real-time sales data via API.
    
@@ -100,7 +100,7 @@ streamlit run app/main.py
    
    Add customer segmentation and product recommendation modules.
    
-##👨‍💻 Team
+## 👨‍💻 Team
 
    Ali Sherif Salaheldin
    Abdelrahman Mohamed Mahmoud
