@@ -9,18 +9,31 @@ It leverages **Python**, **Pandas**, **Scikit-Learn**, and **Streamlit** for dat
 ## 📁 Project Structure
 
    Apple-Retail-Sales-Forecasting/
+   
    ├── app/ # Streamlit app for interactive visualization
+   
    │ └── ... # Streamlit scripts (e.g., main.py, utils.py)
+   
    ├── data/ # Raw and processed datasets
-   │ ├── raw/ # Original datasets
-   │ ├── processed/ # Cleaned and preprocessed datasets
-   │ └── files.txt # List of dataset files
+   
+      │ ├── raw/ # Original datasets
+   
+      │ ├── processed/ # Cleaned and preprocessed datasets
+   
+         │ └── files.txt # List of dataset files
+   
    ├── notebooks/ # Jupyter notebooks for EDA and model development
-   │ └── ...
+   
+         │ └── ...
+   
    ├── scripts/ # Python scripts for preprocessing and training
-   │ └── ...
+   
+         │ └── ...
+   
    ├── requirements.txt # Python dependencies
+   
    ├── .gitignore # Ignored files and folders (e.g., .venv, data cache)
+   
    └── README.md # Project documentation
 
 
