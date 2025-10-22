@@ -27,7 +27,7 @@ Apple-Retail-Sales-Forecasting/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/Apple-Retail-Sales-Forecasting.git
+   git clone https://github.com/AliSherif2303/Apple-Retail-Sales-Forecasting.git
    cd Apple-Retail-Sales-Forecasting
 
 Create and activate a virtual environment
@@ -42,84 +42,84 @@ Run the Streamlit app
 
 streamlit run app/main.py
 
-📊 Project Workflow
+##📊 Project Workflow
 
-Exploratory Data Analysis (EDA)
+   Exploratory Data Analysis (EDA)
+   
+   Cleaned and explored Apple retail sales data.
+   
+   Identified seasonal and regional sales patterns.
+   
+   Visualized trends in product category performance.
+   
+   Feature Engineering & Preprocessing
+   
+   Encoded categorical features using Label and Target Encoding.
+   
+   Handled missing values and outliers.
+   
+   Aggregated data by region, store, and time period.
+   
+   Modeling & Forecasting
+   
+   Applied XGBoost Regressor for time-based forecasting.
+   
+   Tuned hyperparameters using cross-validation.
+   
+   Evaluated performance with RMSE and R² metrics.
+   
+   Interactive Dashboard
+   
+   Built with Streamlit to visualize predictions and KPIs.
+   
+   Allows users to explore forecasts by region, product, and time period.
+   
+##📈 Example Insights
 
-Cleaned and explored Apple retail sales data.
+   📅 Seasonal peaks in Q4 due to holiday sales.
+   
+   🏬 Highest-performing regions identified by total revenue.
+   
+   📱 Product categories showing strongest year-over-year growth.
 
-Identified seasonal and regional sales patterns.
+##🧠 Tech Stack
 
-Visualized trends in product category performance.
+   Languages: Python
+   
+   Libraries: Pandas, NumPy, Scikit-learn, XGBoost, Matplotlib, Seaborn
+   
+   Visualization & App: Streamlit
+   
+   Version Control: Git, GitHub
+   
+##🚀 Future Enhancements
 
-Feature Engineering & Preprocessing
+   Integrate real-time sales data via API.
+   
+   Implement deep learning forecasting models (e.g., LSTM).
+   
+   Add customer segmentation and product recommendation modules.
+   
+##👨‍💻 Team
 
-Encoded categorical features using Label and Target Encoding.
-
-Handled missing values and outliers.
-
-Aggregated data by region, store, and time period.
-
-Modeling & Forecasting
-
-Applied XGBoost Regressor for time-based forecasting.
-
-Tuned hyperparameters using cross-validation.
-
-Evaluated performance with RMSE and R² metrics.
-
-Interactive Dashboard
-
-Built with Streamlit to visualize predictions and KPIs.
-
-Allows users to explore forecasts by region, product, and time period.
-
-📈 Example Insights
-
-📅 Seasonal peaks in Q4 due to holiday sales.
-
-🏬 Highest-performing regions identified by total revenue.
-
-📱 Product categories showing strongest year-over-year growth.
-
-🧠 Tech Stack
-
-Languages: Python
-
-Libraries: Pandas, NumPy, Scikit-learn, XGBoost, Matplotlib, Seaborn
-
-Visualization & App: Streamlit
-
-Version Control: Git, GitHub
-
-🚀 Future Enhancements
-
-Integrate real-time sales data via API.
-
-Implement deep learning forecasting models (e.g., LSTM).
-
-Add customer segmentation and product recommendation modules.
-
-👨‍💻 Team
-
-Ali Sherif Salaheldin
-Abdelrahman Mohamed Mahmoud
+   Ali Sherif Salaheldin
+   Abdelrahman Mohamed Mahmoud
 
 ---
 
 ## 🧠 Datasets Overview
 
-These CSV files come from the [Apple Retail Sales Dataset](https://www.kaggle.com/datasets/amangarg08/apple-retail-sales-dataset).
+   These CSV files come from the [Apple Retail Sales Dataset](https://www.kaggle.com/datasets/amangarg08/apple-retail-sales-dataset).
 
-| File | Description | Shape |
-|------|--------------|--------|
-| `Products.csv` | Product info (ID, category, price, etc.) | (89, 5) |
-| `Sales.csv` | Sales transactions | (1,040,200, 5) |
-| `Warranty.csv` | Warranty claims and repair statuses | (30,000, 4) |
-| `Stores.csv` | Apple store locations | (75, 4) |
-| `Category.csv` | Product category mapping | (10, 2) |
+   | File | Description | Shape |
+   |------|--------------|--------|
+   | `Products.csv` | Product info (ID, category, price, etc.) | (89, 5) |
+   | `Sales.csv` | Sales transactions | (1,040,200, 5) |
+   | `Warranty.csv` | Warranty claims and repair statuses | (30,000, 4) |
+   | `Stores.csv` | Apple store locations | (75, 4) |
+   | `Category.csv` | Product category mapping | (10, 2) |
 
----
+   ---
 
 ## ⚙️ Setup Instructions
 
