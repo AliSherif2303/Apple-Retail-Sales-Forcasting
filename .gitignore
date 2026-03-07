@@ -36,3 +36,9 @@ reports/figures/
 
 # --- OS files ---
 Thumbs.db
+<<<<<<< HEAD
+=======
+
+# large processed files
+data/processed/*.csv
+>>>>>>> f4faff8eb5e3082d2c0be832ce370ad87815037b
