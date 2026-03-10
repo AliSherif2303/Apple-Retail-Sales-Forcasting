@@ -21,7 +21,7 @@ ENV/
 
 # --- Data folders ---
 data/raw/
-#data/processed/
+data/processed/*.csv
 data/temp/
 data/interim/
 reports/figures/
@@ -36,9 +36,3 @@ reports/figures/
 
 # --- OS files ---
 Thumbs.db
-<<<<<<< HEAD
-=======
-
-# large processed files
-data/processed/*.csv
->>>>>>> f4faff8eb5e3082d2c0be832ce370ad87815037b
