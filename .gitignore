@@ -20,7 +20,7 @@ ENV/
 .env.*
 
 # --- Data folders ---
-data/raw/
+data/raw/*.csv
 data/processed/*.csv
 data/temp/
 data/interim/
