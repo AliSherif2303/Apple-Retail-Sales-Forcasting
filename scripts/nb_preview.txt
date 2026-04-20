@@ -1,0 +1,176 @@
+--- Cell 0 (code) ---
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_absolute_error, r2_score
+
+import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dense, Input, Layer
+from tensorflow.keras.models import 
+
+--- Cell 1 (code) ---
+from pathlib import Path
+
+PROJECT_ROOT = Path.cwd().parent.resolve()
+PROC = PROJECT_ROOT / "data" / "processed"
+
+df = pd.read_csv(PROC / "cleaned_apple_sales_enriched_realistic.csv")
+
+--- Cell 2 (code) ---
+df.head()
+
+--- Cell 3 (code) ---
+df.describe()
+
+--- Cell 4 (code) ---
+df.info()
+
+--- Cell 5 (code) ---
+df.describe(include='object')
+
+--- Cell 6 (code) ---
+df["sale_date"] = pd.to_datetime(df["sale_date"])
+
+df = df.sort_values(["store_id","sale_date"])
+
+--- Cell 7 (code) ---
+df["year"] = df["sale_date"].dt.year
+df["month"] = df["sale_date"].dt.month
+
+--- Cell 8 (code) ---
+df_monthly = df.groupby([
+    "store_id",
+    "store_name",
+    "country_norm_mapped",
+    "year",
+    "month"
+]).agg({
+
+    "sales_amount_realistic":"sum",
+    "quantity_realistic":"sum",
+    "price_realistic":"mean",
+
+    "gdp_per_capita":"mean",
+    "inflation_rate":"mean",
+    "exchange_rate":"m
+
+--- Cell 9 (code) ---
+df_monthly["date"] = pd.to_datetime(
+    df_monthly[["year","month"]].assign(day=1)
+)
+
+--- Cell 10 (code) ---
+df_monthly["month_sin"] = np.sin(2*np.pi*df_monthly["month"]/12)
+df_monthly["month_cos"] = np.cos(2*np.pi*df_monthly["month"]/12)
+
+--- Cell 11 (code) ---
+df_monthly["gdp_growth"] = df_monthly.groupby("country_norm_mapped")["gdp_per_capita"].pct_change()
+
+df_monthly["inflation_change"] = df_monthly.groupby("country_norm_mapped")["inflation_rate"].pct_change()
+
+df_monthly["exchange_change"] = df_monthly.groupby("country_norm_mapped")["exchange_rate"].p
+
+--- Cell 12 (code) ---
+features = [
+
+"quantity_realistic",
+"price_realistic",
+"promo_flag",
+
+"gdp_growth",
+"inflation_change",
+"exchange_change",
+"internet_growth",
+
+"month_sin",
+"month_cos"
+
+]
+
+target = "sales_amount_realistic"
+
+--- Cell 13 (code) ---
+class Attention(Layer):
+
+    def call(self, inputs):
+
+        score = tf.nn.tanh(inputs)
+
+        weights = tf.nn.softmax(score, axis=1)
+
+        context = weights * inputs
+
+        context = tf.reduce_sum(context, axis=1)
+
+        return context
+
+--- Cell 14 (code) ---
+def build_model(n_features):
+
+    inputs = Input(shape=(12, n_features))
+
+    x = LSTM(128, return_sequences=True)(inputs)
+
+    x = Attention()(x)
+
+    x = Dense(64, activation="relu")(x)
+
+    output = Dense(12)(x)
+
+    model = Model(inputs, output)
+
+    model.compile(
+        optimizer="adam",
+    
+
+--- Cell 15 (code) ---
+def create_sequences(data, seq_len=12):
+
+    X=[]
+    y=[]
+
+    for i in range(len(data)-seq_len-12):
+
+        X.append(data[i:i+seq_len])
+
+        y.append(data[i+seq_len:i+seq_len+12,0])
+
+    return np.array(X),np.array(y)
+
+--- Cell 16 (code) ---
+stores = df_monthly["store_id"].unique()
+
+store_results = {}
+
+metrics_list = []
+
+--- Cell 17 (code) ---
+for store in stores:
+
+    store_df = df_monthly[df_monthly["store_id"]==store]
+
+    store_name = store_df["store_name"].iloc[0]
+    country = store_df["country_norm_mapped"].iloc[0]
+
+    store_df = store_df.sort_values("date")
+
+    data = store_df[[target]+features]
+
+    scaler = MinMaxScaler()
+
+   
+
+--- Cell 18 (code) ---
+metrics_df = pd.DataFrame(metrics_list)
+
+print(metrics_df)
+
+--- Cell 19 (code) ---
+future_dates = pd.date_range(
+    start="2025-01-01",
+    periods=12,
+    freq="MS"
+)
+
