@@ -1,0 +1,76 @@
+store_id,store_name,city,country_norm_mapped
+ST-41,Apple Central World,Bangkok,thailand
+ST-31,Apple Shinjuku,Tokyo,japan
+ST-9,Apple Park Visitor Center,Cupertino,united states
+ST-20,Apple Kaerntner Strasse,Vienna,austria
+ST-60,Apple Antara,Mexico City,mexico
+ST-11,Apple Ala Moana,Honolulu,united states
+ST-21,Apple Passeig de Gracia,Barcelona,spain
+ST-7,Apple Beverly Center,Los Angeles,united states
+ST-69,Apple The Dubai Mall,Dubai,united arab emirates
+ST-36,Apple Nanjing East,Shanghai,china
+ST-26,Apple Leidseplein,Amsterdam,netherlands
+ST-3,Apple Michigan Avenue,Chicago,united states
+ST-16,Apple Regent Street,London,united kingdom
+ST-39,Apple Taipei 101,Taipei,taiwan
+ST-59,Apple Mall of the Emirates,Dubai,united arab emirates
+ST-66,Apple Orchard Road,Singapore,singapore
+ST-4,Apple The Grove,Los Angeles,united states
+ST-2,Apple Union Square,San Francisco,united states
+ST-71,Apple Yeouido,Seoul,"korea, rep."
+ST-51,Apple Sydney,Sydney,australia
+ST-34,Apple Fukuoka,Fukuoka,japan
+ST-63,Apple Parque La Colina,Bogota,colombia
+ST-33,Apple Marunouchi,Tokyo,japan
+ST-17,Apple Covent Garden,London,united kingdom
+ST-67,Apple Chadstone,Melbourne,australia
+ST-49,Apple Yorkdale,Toronto,canada
+ST-30,Apple Dubai Mall,Dubai,united arab emirates
+ST-19,Apple Opera,Paris,france
+ST-45,Apple Jewel Changi Airport,Singapore,singapore
+ST-54,Apple Bondi,Bondi,australia
+ST-10,Apple South Coast Plaza,Costa Mesa,united states
+ST-32,Apple Omotesando,Tokyo,japan
+ST-68,Apple Champs-Elysees,Paris,france
+ST-43,Apple Cotai Central,Macau,china
+ST-15,Apple Downtown Brooklyn,Brooklyn,united states
+ST-72,Apple Kumamoto,Kumamoto,japan
+ST-5,Apple SoHo,New York,united states
+ST-8,Apple Pioneer Place,Portland,united states
+ST-56,Apple Southland,Cheltenham,australia
+ST-44,Apple Kyoto,Kyoto,japan
+ST-65,Apple Iconsiam,Bangkok,thailand
+ST-27,Apple Rosenstrasse,Munich,germany
+ST-74,Apple Central World,Bangkok,thailand
+ST-40,Apple Causeway Bay,Hong Kong,china
+ST-22,Apple Piazza Liberty,Milan,italy
+ST-55,Apple Highpoint,Melbourne,australia
+ST-18,Apple Champs-Elysees,Paris,france
+ST-12,Apple North Michigan Avenue,Chicago,united states
+ST-23,Apple Via del Corso,Rome,italy
+ST-75,Apple Beijing SKP,Beijing,china
+ST-25,Apple Schildergasse,Cologne,germany
+ST-61,Apple Santa Fe,Mexico City,mexico
+ST-28,Apple Brompton Road,London,united kingdom
+ST-35,Apple Shanghai IFC,Shanghai,china
+ST-70,Apple Gangnam,Seoul,"korea, rep."
+ST-73,Apple Covent Garden,London,united kingdom
+ST-14,Apple The Americana at Brand,Glendale,united states
+ST-46,Apple Eaton Centre,Toronto,canada
+ST-48,Apple Sainte-Catherine,Montreal,canada
+ST-62,Apple Via Santa Fe,Mexico City,mexico
+ST-6,Apple Grand Central,New York,united states
+ST-53,Apple Brisbane,Brisbane,australia
+ST-52,Apple Chadstone,Melbourne,australia
+ST-1,Apple Fifth Avenue,New York,united states
+ST-42,Apple Orchard Road,Singapore,singapore
+ST-24,Apple Kurfuerstendamm,Berlin,germany
+ST-13,Apple Walnut Street,Philadelphia,united states
+ST-38,Apple Taikoo Li,Chengdu,china
+ST-57,Apple Yas Mall,Abu Dhabi,united arab emirates
+ST-47,Apple Rideau Centre,Ottawa,canada
+ST-29,Apple Galeries Lafayette,Paris,france
+ST-64,Apple Andino,Bogota,colombia
+ST-37,Apple Sanlitun,Beijing,china
+ST-58,Apple The Dubai Mall,Dubai,united arab emirates
+ST-50,Apple Metrotown,Burnaby,canada
