@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotions & Seasonality — Sales Lift Analysis</title>
+    <meta name="description" content="Clustered Column Chart: Total Sales by Month segmented by Promo Flag to evaluate promotional impact on Apple Sales.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.65);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f0f4ff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-promo: #6366f1;
+            --accent-promo-light: #818cf8;
+            --accent-no-promo: #06b6d4;
+            --accent-no-promo-light: #22d3ee;
+            --accent-gradient-start: #6366f1;
+            --accent-gradient-end: #06b6d4;
+            --shadow-glow: rgba(99, 102, 241, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(ellipse 80% 60% at 50% -20%, rgba(99, 102, 241, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6, 182, 212, 0.08), transparent);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-promo-light);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-promo-light) 50%, var(--accent-no-promo-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* KPI Cards */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease-out 0.15s both;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px var(--shadow-glow);
+        }
+
+        .kpi-card .kpi-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kpi-card .kpi-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .kpi-card .kpi-dot.promo { background: var(--accent-promo); box-shadow: 0 0 8px var(--accent-promo); }
+        .kpi-card .kpi-dot.no-promo { background: var(--accent-no-promo); box-shadow: 0 0 8px var(--accent-no-promo); }
+        .kpi-card .kpi-dot.total { background: linear-gradient(135deg, var(--accent-promo), var(--accent-no-promo)); }
+        .kpi-card .kpi-dot.lift { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+
+        .kpi-card .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Chart Card */
+        .chart-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 32px;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-promo), var(--accent-no-promo), transparent);
+            opacity: 0.5;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .chart-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .legend-custom {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-swatch.promo {
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+        }
+        .legend-swatch.no-promo {
+            background: linear-gradient(135deg, #06b6d4, #22d3ee);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 420px;
+        }
+
+        /* Insight Banner */
+        .insight-banner {
+            margin-top: 28px;
+            padding: 20px 24px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(6, 182, 212, 0.06));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            animation: fadeInUp 0.8s ease-out 0.45s both;
+        }
+
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(99, 102, 241, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .insight-icon svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-promo-light);
+        }
+
+        .insight-text h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .insight-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .insight-text .highlight {
+            color: var(--accent-promo-light);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: var(--text-muted);
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 24px 16px 40px; }
+            .chart-wrapper { height: 320px; }
+            .chart-card { padding: 20px; }
+            .kpi-card .kpi-value { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                Page 4 — Promotions & Seasonality
+            </div>
+            <h1>Promo Impact on Monthly Sales</h1>
+            <p>Clustered comparison of total sales revenue for promotional vs. non-promotional transactions, aggregated by calendar month across all years.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">Total Sales by Month &amp; Promo Flag</div>
+                    <div class="chart-subtitle">Dim_Calendar[Month] · All years aggregated</div>
+                </div>
+                <div class="legend-custom">
+                    <div class="legend-item">
+                        <span class="legend-swatch no-promo"></span>
+                        No Promo (0)
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-swatch promo"></span>
+                        Promo Active (1)
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="promoChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Insight Banner -->
+        <div class="insight-banner">
+            <div class="insight-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="insight-text" id="insight-text">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="footer">
+            Apple Sales Intelligence · Data Model: Fact_Sales × Dim_Calendar · Built for Power BI Dashboard Design
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DATA
+        // ============================================
+        const rawData = [
+            {"month":1,"promo_flag":0,"sales":399370630.40},
+            {"month":1,"promo_flag":1,"sales":68688292.18},
+            {"month":2,"promo_flag":0,"sales":457617896.27},
+            {"month":2,"promo_flag":1,"sales":76078963.97},
+            {"month":3,"promo_flag":0,"sales":475718654.01},
+            {"month":3,"promo_flag":1,"sales":83017284.64},
+            {"month":4,"promo_flag":0,"sales":461123000.27},
+            {"month":4,"promo_flag":1,"sales":76218347.63},
+            {"month":5,"promo_flag":0,"sales":472792869.11},
+            {"month":5,"promo_flag":1,"sales":80770539.96},
+            {"month":6,"promo_flag":0,"sales":490561166.29},
+            {"month":6,"promo_flag":1,"sales":82868792.12},
+            {"month":7,"promo_flag":0,"sales":504968442.98},
+            {"month":7,"promo_flag":1,"sales":84927279.54},
+            {"month":8,"promo_flag":0,"sales":509873298.48},
+            {"month":8,"promo_flag":1,"sales":87172773.75},
+            {"month":9,"promo_flag":0,"sales":493909030.36},
+            {"month":9,"promo_flag":1,"sales":83659907.42},
+            {"month":10,"promo_flag":0,"sales":512691757.69},
+            {"month":10,"promo_flag":1,"sales":88083084.83},
+            {"month":11,"promo_flag":0,"sales":565118870.78},
+            {"month":11,"promo_flag":1,"sales":92741515.53},
+            {"month":12,"promo_flag":0,"sales":591346709.85},
+            {"month":12,"promo_flag":1,"sales":97948821.36}
+        ];
+
+        const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const noPromoData = rawData.filter(d => d.promo_flag === 0).map(d => d.sales);
+        const promoData   = rawData.filter(d => d.promo_flag === 1).map(d => d.sales);
+
+        // ============================================
+        // KPI CALCULATIONS
+        // ============================================
+        const totalNoPromo = noPromoData.reduce((a,b) => a+b, 0);
+        const totalPromo   = promoData.reduce((a,b) => a+b, 0);
+        const grandTotal   = totalNoPromo + totalPromo;
+        const promoShare   = (totalPromo / grandTotal * 100);
+
+        // Average per-unit lift: compare average promo month vs non-promo month
+        const avgPromo   = totalPromo / 12;
+        const avgNoPromo = totalNoPromo / 12;
+
+        function fmtCurrency(n) {
+            if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+            return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        const kpis = [
+            { label: 'Total Sales (All)', value: fmtCurrency(grandTotal), sub: 'Across all 12 months', dot: 'total' },
+            { label: 'No Promo Sales', value: fmtCurrency(totalNoPromo), sub: `${(100 - promoShare).toFixed(1)}% of total`, dot: 'no-promo' },
+            { label: 'Promo Sales', value: fmtCurrency(totalPromo), sub: `${promoShare.toFixed(1)}% of total`, dot: 'promo' },
+            { label: 'Promo Share', value: promoShare.toFixed(1) + '%', sub: `Avg ${fmtCurrency(avgPromo)}/mo`, dot: 'lift' }
+        ];
+
+        const kpiRow = document.getElementById('kpi-row');
+        kpis.forEach(k => {
+            const card = document.createElement('div');
+            card.className = 'kpi-card';
+            card.innerHTML = `
+                <div class="kpi-label"><span class="kpi-dot ${k.dot}"></span>${k.label}</div>
+                <div class="kpi-value">${k.value}</div>
+                <div class="kpi-sub">${k.sub}</div>
+            `;
+            kpiRow.appendChild(card);
+        });
+
+        // ============================================
+        // INSIGHT
+        // ============================================
+        const peakPromoMonth = monthLabels[promoData.indexOf(Math.max(...promoData))];
+        const peakNoPromoMonth = monthLabels[noPromoData.indexOf(Math.max(...noPromoData))];
+        document.getElementById('insight-text').innerHTML = `
+            <h3>Key Insight — Promotional Lift Analysis</h3>
+            <p>
+                Promotional transactions consistently account for approximately <span class="highlight">${promoShare.toFixed(1)}%</span> of total monthly revenue.
+                The pattern is remarkably stable across all 12 months — promo sales scale proportionally with non-promo sales rather than spiking in specific months.
+                The highest promo revenue month is <span class="highlight">${peakPromoMonth}</span> ($${(Math.max(...promoData)/1e6).toFixed(1)}M),
+                which also aligns with the overall peak non-promo month (<span class="highlight">${peakNoPromoMonth}</span>).
+                This suggests promotions amplify existing seasonal demand rather than creating net-new demand windows.
+            </p>
+        `;
+
+        // ============================================
+        // CHART
+        // ============================================
+        const ctx = document.getElementById('promoChart').getContext('2d');
+
+        // Gradient for No Promo bars
+        const gradNoPromo = ctx.createLinearGradient(0, 0, 0, 420);
+        gradNoPromo.addColorStop(0, 'rgba(6, 182, 212, 0.85)');
+        gradNoPromo.addColorStop(1, 'rgba(6, 182, 212, 0.35)');
+
+        const gradNoPromoHover = ctx.createLinearGradient(0, 0, 0, 420);
+        gradNoPromoHover.addColorStop(0, 'rgba(34, 211, 238, 1)');
+        gradNoPromoHover.addColorStop(1, 'rgba(6, 182, 212, 0.6)');
+
+        // Gradient for Promo bars
+        const gradPromo = ctx.createLinearGradient(0, 0, 0, 420);
+        gradPromo.addColorStop(0, 'rgba(99, 102, 241, 0.85)');
+        gradPromo.addColorStop(1, 'rgba(99, 102, 241, 0.35)');
+
+        const gradPromoHover = ctx.createLinearGradient(0, 0, 0, 420);
+        gradPromoHover.addColorStop(0, 'rgba(129, 140, 248, 1)');
+        gradPromoHover.addColorStop(1, 'rgba(99, 102, 241, 0.6)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'No Promo (0)',
+                        data: noPromoData,
+                        backgroundColor: gradNoPromo,
+                        hoverBackgroundColor: gradNoPromoHover,
+                        borderColor: 'rgba(6, 182, 212, 0.6)',
+                        borderWidth: 1,
+                        borderRadius: { topLeft: 6, topRight: 6 },
+                        borderSkipped: 'bottom',
+                    },
+                    {
+                        label: 'Promo Active (1)',
+                        data: promoData,
+                        backgroundColor: gradPromo,
+                        hoverBackgroundColor: gradPromoHover,
+                        borderColor: 'rgba(99, 102, 241, 0.6)',
+                        borderWidth: 1,
+                        borderRadius: { topLeft: 6, topRight: 6 },
+                        borderSkipped: 'bottom',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart',
+                    delay: (context) => context.dataIndex * 60
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#f0f4ff',
+                        bodyColor: '#94a3b8',
+                        borderColor: 'rgba(99, 102, 241, 0.3)',
+                        borderWidth: 1,
+                        cornerRadius: 12,
+                        padding: 16,
+                        titleFont: { family: 'Inter', size: 14, weight: '700' },
+                        bodyFont: { family: 'Inter', size: 13 },
+                        displayColors: true,
+                        boxPadding: 6,
+                        callbacks: {
+                            title: (items) => monthLabels[items[0].dataIndex] + ' — Monthly Breakdown',
+                            label: (item) => {
+                                const val = item.raw;
+                                return ` ${item.dataset.label}: $${(val/1e6).toFixed(1)}M`;
+                            },
+                            afterBody: (items) => {
+                                const idx = items[0].dataIndex;
+                                const total = noPromoData[idx] + promoData[idx];
+                                const share = (promoData[idx] / total * 100).toFixed(1);
+                                return [``, `  Total: $${(total/1e6).toFixed(1)}M  ·  Promo Share: ${share}%`];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 12, weight: '600' },
+                            padding: 8,
+                        },
+                        border: {
+                            color: 'rgba(255,255,255,0.06)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.04)',
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: { family: 'Inter', size: 11 },
+                            padding: 12,
+                            callback: (value) => {
+                                if (value >= 1e9) return '$' + (value/1e9).toFixed(1) + 'B';
+                                if (value >= 1e6) return '$' + (value/1e6).toFixed(0) + 'M';
+                                return '$' + value;
+                            },
+                            maxTicksLimit: 8,
+                        },
+                        border: {
+                            display: false,
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

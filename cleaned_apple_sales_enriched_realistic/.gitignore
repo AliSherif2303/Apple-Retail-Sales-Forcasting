@@ -1,0 +1,13 @@
+# Power BI file (binary, too large for GitHub)
+eda/test1.pbix
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+env/
+
+# Streamlit cache
+.streamlit/secrets.toml
