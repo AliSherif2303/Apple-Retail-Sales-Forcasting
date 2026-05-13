@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  streamlit-app:
+    build: .
+    container_name: apple-sales-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - .:/app # Optional: for hot reloading in dev
+    depends_on:
+      - ollama
+    networks:
+      - app-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - app-network
+    # If using GPU on the Azure VM, uncomment the following section:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  ollama_data:

@@ -71,8 +71,10 @@ CREATE TABLE sales (
 );
 """
     db = SQLDatabase.from_uri(f"duckdb:///{DB_PATH}", custom_table_info={"sales": custom_schema})
-    llm = ChatOllama(model="qwen2.5-coder:3b", temperature=0)
-    analyst = ChatOllama(model="qwen2.5-coder:3b", temperature=0.0)
+    import os
+    ollama_base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    llm = ChatOllama(model="qwen2.5-coder:3b", temperature=0, base_url=ollama_base_url)
+    analyst = ChatOllama(model="qwen2.5-coder:3b", temperature=0.0, base_url=ollama_base_url)
     return db, llm, analyst
 
 db, llm, analyst_llm = build_db()
