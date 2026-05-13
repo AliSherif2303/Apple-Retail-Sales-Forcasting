@@ -317,7 +317,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "\U0001F4F1 Product Insights",
     "\U0001FAF6 Store Performance",
     "\U0001F4CA Economic Factors",
-    "\U0001F52E Sales Forecasting",
+    "🔮 Sales Forecasting",
 ])
 
 
@@ -336,7 +336,7 @@ with tab1:
         ts.columns = ["Period", "Revenue"]
     elif trend_gran == "Quarterly":
         ts = fdf.groupby(["year","quarter"])["sales_amount_realistic"].sum().reset_index()
-        ts["Period"] = ts["year"].astype(str) + " " + ts["quarter"]
+        ts["Period"] = ts["year"].astype(str) + " " + ts["quarter"].astype(str)
         ts = ts[["Period","sales_amount_realistic"]].rename(columns={"sales_amount_realistic":"Revenue"})
     else:
         ts = fdf.groupby("year")["sales_amount_realistic"].sum().reset_index()
@@ -760,6 +760,7 @@ with tab5:
     st.plotly_chart(fig_iu, use_container_width=True)
 
 
+
 # ═══════════════════════════════════════════════════════════════════════
 # TAB 6 - SALES FORECASTING (CatBoost)
 # ═══════════════════════════════════════════════════════════════════════
@@ -1109,6 +1110,7 @@ with tab6:
             bot10 = forecast_df.nsmallest(10, "predicted_sales")[["store_name", "country", "predicted_sales"]].reset_index(drop=True)
             bot10["predicted_sales"] = bot10["predicted_sales"].apply(lambda x: f"${x:,.0f}")
             st.dataframe(bot10, use_container_width=True, hide_index=True)
+
 
 
 # ─── Footer ──────────────────────────────────────────────────────────

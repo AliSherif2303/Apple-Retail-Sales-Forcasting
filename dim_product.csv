@@ -1,0 +1,178 @@
+product_id,product_name,launch_date,category_id,category_name
+P-73,Apple One,2020-01-01,CAT-8,Subscription Service
+P-40,iPhone SE (3rd Generation),2020-01-01,CAT-4,Smartphone
+P-70,Apple Fitness+,2020-01-01,CAT-8,Subscription Service
+P-18,Beats Solo Pro,2020-01-01,CAT-2,Audio
+P-16,Beats Studio Buds,2020-01-01,CAT-2,Audio
+P-35,iPhone 14 Pro Max,2020-01-01,CAT-4,Smartphone
+P-57,iMac 24-inch,2020-01-01,CAT-7,Desktop
+P-79,Magic Trackpad,2020-01-01,CAT-10,Accessories
+P-48,Apple Watch Nike Edition,2020-01-01,CAT-5,Wearable
+P-86,MagSafe Battery Pack,2020-01-01,CAT-10,Accessories
+P-21,HomePod mini,2020-01-01,CAT-2,Audio
+P-88,AirTag,2020-01-01,CAT-10,Accessories
+P-8,MacBook Air (Retina),2020-01-01,CAT-1,Laptop
+P-41,iPhone 12,2020-01-01,CAT-4,Smartphone
+P-59,iMac Pro,2020-01-01,CAT-7,Desktop
+P-89,Lightning to USB Cable,2020-01-01,CAT-10,Accessories
+P-31,iPad Pro (M2),2020-01-01,CAT-3,Tablet
+P-4,MacBook Pro 13-inch,2020-01-01,CAT-1,Laptop
+P-52,Apple Watch Series 6,2020-01-01,CAT-5,Wearable
+P-29,iPad Pro 12.9-inch,2020-01-01,CAT-3,Tablet
+P-12,AirPods (3rd Generation),2020-01-01,CAT-2,Audio
+P-45,Apple Watch Series 9,2020-01-01,CAT-5,Wearable
+P-84,Leather Case for iPhone,2020-01-01,CAT-10,Accessories
+P-77,Magic Keyboard with Touch ID,2020-01-01,CAT-10,Accessories
+P-81,Apple Pencil (2nd Generation),2020-01-01,CAT-10,Accessories
+P-5,MacBook Pro 14-inch,2020-01-01,CAT-1,Laptop
+P-82,Smart Keyboard Folio,2020-01-01,CAT-10,Accessories
+P-64,Mac Studio,2020-01-01,CAT-7,Desktop
+P-22,iPad (10th Generation),2020-01-01,CAT-3,Tablet
+P-49,Apple Watch Hermès,2020-01-01,CAT-5,Wearable
+P-72,Apple News+,2020-01-01,CAT-8,Subscription Service
+P-85,Silicone Case for iPhone,2020-01-01,CAT-10,Accessories
+P-68,Apple Music,2020-01-01,CAT-8,Subscription Service
+P-61,Mac Pro (2023),2020-01-01,CAT-7,Desktop
+P-46,Apple Watch Ultra,2020-01-01,CAT-5,Wearable
+P-78,Magic Mouse,2020-01-01,CAT-10,Accessories
+P-13,AirPods Pro,2020-01-01,CAT-2,Audio
+P-33,iPhone 14 Plus,2020-01-01,CAT-4,Smartphone
+P-58,iMac 27-inch,2020-01-01,CAT-7,Desktop
+P-51,Apple Watch Series 7,2020-01-01,CAT-5,Wearable
+P-30,iPad Pro (M1),2020-01-01,CAT-3,Tablet
+P-76,Magic Keyboard,2020-01-01,CAT-10,Accessories
+P-38,iPhone 13 Pro,2020-01-01,CAT-4,Smartphone
+P-27,iPad Air (4th Generation),2020-01-01,CAT-3,Tablet
+P-3,MacBook Air (M2),2020-01-01,CAT-1,Laptop
+P-14,AirPods Pro (2nd Generation),2020-01-01,CAT-2,Audio
+P-9,MacBook Pro (Touch Bar),2020-01-01,CAT-1,Laptop
+P-42,iPhone 12 mini,2020-01-01,CAT-4,Smartphone
+P-74,HomePod,2020-01-01,CAT-9,Smart Speaker
+P-15,AirPods Max,2020-01-01,CAT-2,Audio
+P-50,Apple Watch Series 8,2020-01-01,CAT-5,Wearable
+P-60,iMac with Retina Display,2020-01-01,CAT-7,Desktop
+P-66,Mac Mini (M2),2020-01-01,CAT-7,Desktop
+P-36,iPhone 13,2020-01-01,CAT-4,Smartphone
+P-19,Beats Powerbeats Pro,2020-01-01,CAT-2,Audio
+P-44,iPhone 12 Pro Max,2020-01-01,CAT-4,Smartphone
+P-63,Mac Pro (Rack),2020-01-01,CAT-7,Desktop
+P-20,HomePod (2nd Generation),2020-01-01,CAT-2,Audio
+P-24,iPad mini (6th Generation),2020-01-01,CAT-3,Tablet
+P-65,Mac Mini,2020-01-01,CAT-7,Desktop
+P-83,Smart Cover for iPad,2020-01-01,CAT-10,Accessories
+P-6,MacBook Pro 16-inch,2020-01-01,CAT-1,Laptop
+P-11,AirPods (2nd Generation),2020-01-01,CAT-2,Audio
+P-67,iCloud,2020-01-01,CAT-8,Subscription Service
+P-55,Apple TV HD,2020-01-01,CAT-6,Streaming Device
+P-17,Beats Fit Pro,2020-01-01,CAT-2,Audio
+P-56,Apple TV (3rd Generation),2020-01-01,CAT-6,Streaming Device
+P-2,MacBook Air (M1),2020-01-01,CAT-1,Laptop
+P-26,iPad Air (5th Generation),2020-01-01,CAT-3,Tablet
+P-1,MacBook,2020-01-01,CAT-1,Laptop
+P-7,MacBook (Retina),2020-01-01,CAT-1,Laptop
+P-39,iPhone 13 Pro Max,2020-01-01,CAT-4,Smartphone
+P-28,iPad Pro 11-inch,2020-01-01,CAT-3,Tablet
+P-69,Apple TV+,2020-01-01,CAT-8,Subscription Service
+P-10,MacBook (Early 2015),2020-01-01,CAT-1,Laptop
+P-71,Apple Arcade,2020-01-01,CAT-8,Subscription Service
+P-43,iPhone 12 Pro,2020-01-01,CAT-4,Smartphone
+P-87,MagSafe Charger,2020-01-01,CAT-10,Accessories
+P-47,Apple Watch SE,2020-01-01,CAT-5,Wearable
+P-37,iPhone 13 mini,2020-01-01,CAT-4,Smartphone
+P-80,Apple Pencil (1st Generation),2020-01-01,CAT-10,Accessories
+P-53,Apple Watch Series 5,2020-01-01,CAT-5,Wearable
+P-54,Apple TV 4K,2020-01-01,CAT-6,Streaming Device
+P-34,iPhone 14 Pro,2020-01-01,CAT-4,Smartphone
+P-23,iPad (9th Generation),2020-01-01,CAT-3,Tablet
+P-25,iPad mini (5th Generation),2020-01-01,CAT-3,Tablet
+P-62,Mac Pro (Tower),2020-01-01,CAT-7,Desktop
+P-32,iPhone 14,2020-01-01,CAT-4,Smartphone
+P-75,HomePod mini,2020-01-02,CAT-9,Smart Speaker
+P-51,Apple Watch Series 7,2020-01-13,CAT-5,Wearable
+P-8,MacBook Air (Retina),2020-01-16,CAT-1,Laptop
+P-47,Apple Watch SE,2020-01-20,CAT-5,Wearable
+P-41,iPhone 12,2020-03-05,CAT-4,Smartphone
+P-82,Smart Keyboard Folio,2020-03-10,CAT-10,Accessories
+P-86,MagSafe Battery Pack,2020-03-27,CAT-10,Accessories
+P-73,Apple One,2020-05-02,CAT-8,Subscription Service
+P-88,AirTag,2020-05-11,CAT-10,Accessories
+P-76,Magic Keyboard,2020-05-16,CAT-10,Accessories
+P-3,MacBook Air (M2),2020-05-24,CAT-1,Laptop
+P-48,Apple Watch Nike Edition,2020-06-24,CAT-5,Wearable
+P-56,Apple TV (3rd Generation),2020-07-01,CAT-6,Streaming Device
+P-60,iMac with Retina Display,2020-07-24,CAT-7,Desktop
+P-74,HomePod,2020-08-11,CAT-9,Smart Speaker
+P-44,iPhone 12 Pro Max,2020-09-09,CAT-4,Smartphone
+P-45,Apple Watch Series 9,2020-09-12,CAT-5,Wearable
+P-30,iPad Pro (M1),2020-09-14,CAT-3,Tablet
+P-68,Apple Music,2020-09-26,CAT-8,Subscription Service
+P-65,Mac Mini,2020-09-27,CAT-7,Desktop
+P-20,HomePod (2nd Generation),2020-10-15,CAT-2,Audio
+P-42,iPhone 12 mini,2020-10-31,CAT-4,Smartphone
+P-19,Beats Powerbeats Pro,2020-12-15,CAT-2,Audio
+P-4,MacBook Pro 13-inch,2021-01-17,CAT-1,Laptop
+P-67,iCloud,2021-01-26,CAT-8,Subscription Service
+P-14,AirPods Pro (2nd Generation),2021-01-29,CAT-2,Audio
+P-26,iPad Air (5th Generation),2021-03-06,CAT-3,Tablet
+P-38,iPhone 13 Pro,2021-03-22,CAT-4,Smartphone
+P-57,iMac 24-inch,2021-04-07,CAT-7,Desktop
+P-27,iPad Air (4th Generation),2021-04-24,CAT-3,Tablet
+P-70,Apple Fitness+,2021-05-06,CAT-8,Subscription Service
+P-22,iPad (10th Generation),2021-05-18,CAT-3,Tablet
+P-12,AirPods (3rd Generation),2021-05-30,CAT-2,Audio
+P-32,iPhone 14,2021-06-13,CAT-4,Smartphone
+P-37,iPhone 13 mini,2021-06-20,CAT-4,Smartphone
+P-59,iMac Pro,2021-08-20,CAT-7,Desktop
+P-31,iPad Pro (M2),2021-08-25,CAT-3,Tablet
+P-66,Mac Mini (M2),2021-10-30,CAT-7,Desktop
+P-55,Apple TV HD,2021-11-24,CAT-6,Streaming Device
+P-34,iPhone 14 Pro,2021-12-24,CAT-4,Smartphone
+P-6,MacBook Pro 16-inch,2021-12-28,CAT-1,Laptop
+P-85,Silicone Case for iPhone,2022-01-22,CAT-10,Accessories
+P-72,Apple News+,2022-01-26,CAT-8,Subscription Service
+P-23,iPad (9th Generation),2022-03-08,CAT-3,Tablet
+P-21,HomePod mini,2022-04-05,CAT-2,Audio
+P-58,iMac 27-inch,2022-05-17,CAT-7,Desktop
+P-63,Mac Pro (Rack),2022-06-06,CAT-7,Desktop
+P-11,AirPods (2nd Generation),2022-06-13,CAT-2,Audio
+P-84,Leather Case for iPhone,2022-06-23,CAT-10,Accessories
+P-50,Apple Watch Series 8,2022-07-12,CAT-5,Wearable
+P-15,AirPods Max,2022-08-19,CAT-2,Audio
+P-62,Mac Pro (Tower),2022-10-31,CAT-7,Desktop
+P-40,iPhone SE (3rd Generation),2022-11-10,CAT-4,Smartphone
+P-10,MacBook (Early 2015),2022-11-19,CAT-1,Laptop
+P-24,iPad mini (6th Generation),2022-11-27,CAT-3,Tablet
+P-17,Beats Fit Pro,2022-12-23,CAT-2,Audio
+P-25,iPad mini (5th Generation),2023-01-10,CAT-3,Tablet
+P-83,Smart Cover for iPad,2023-01-25,CAT-10,Accessories
+P-54,Apple TV 4K,2023-02-17,CAT-6,Streaming Device
+P-77,Magic Keyboard with Touch ID,2023-04-09,CAT-10,Accessories
+P-52,Apple Watch Series 6,2023-04-27,CAT-5,Wearable
+P-28,iPad Pro 11-inch,2023-05-07,CAT-3,Tablet
+P-36,iPhone 13,2023-06-15,CAT-4,Smartphone
+P-81,Apple Pencil (2nd Generation),2023-06-21,CAT-10,Accessories
+P-75,HomePod mini,2023-06-22,CAT-9,Smart Speaker
+P-61,Mac Pro (2023),2023-07-14,CAT-7,Desktop
+P-78,Magic Mouse,2023-08-26,CAT-10,Accessories
+P-33,iPhone 14 Plus,2023-09-04,CAT-4,Smartphone
+P-1,MacBook,2023-09-17,CAT-1,Laptop
+P-7,MacBook (Retina),2023-10-17,CAT-1,Laptop
+P-53,Apple Watch Series 5,2023-11-10,CAT-5,Wearable
+P-29,iPad Pro 12.9-inch,2023-11-10,CAT-3,Tablet
+P-2,MacBook Air (M1),2023-11-11,CAT-1,Laptop
+P-89,Lightning to USB Cable,2024-01-05,CAT-10,Accessories
+P-64,Mac Studio,2024-02-15,CAT-7,Desktop
+P-18,Beats Solo Pro,2024-02-26,CAT-2,Audio
+P-87,MagSafe Charger,2024-03-27,CAT-10,Accessories
+P-16,Beats Studio Buds,2024-05-07,CAT-2,Audio
+P-39,iPhone 13 Pro Max,2024-05-09,CAT-4,Smartphone
+P-5,MacBook Pro 14-inch,2024-05-12,CAT-1,Laptop
+P-79,Magic Trackpad,2024-05-25,CAT-10,Accessories
+P-9,MacBook Pro (Touch Bar),2024-06-17,CAT-1,Laptop
+P-80,Apple Pencil (1st Generation),2024-06-30,CAT-10,Accessories
+P-43,iPhone 12 Pro,2024-08-03,CAT-4,Smartphone
+P-46,Apple Watch Ultra,2024-08-30,CAT-5,Wearable
+P-71,Apple Arcade,2024-09-13,CAT-8,Subscription Service
+P-13,AirPods Pro,2024-10-06,CAT-2,Audio
+P-35,iPhone 14 Pro Max,2024-10-07,CAT-4,Smartphone
+P-69,Apple TV+,2024-11-04,CAT-8,Subscription Service
