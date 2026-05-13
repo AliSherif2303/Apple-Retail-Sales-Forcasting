@@ -1064,7 +1064,7 @@ with tab6:
         ))
         style_fig(fig_sc, 480)
         fig_sc.update_layout(
-            title=f"Actual vs Predicted (R\u00b2 = {metrics['R\u00b2']:.4f})",
+            title=f"Actual vs Predicted (R\u00b2 = {metrics[_r2_key]:.4f})",
             xaxis_title="Actual Sales ($)", yaxis_title="Predicted Sales ($)",
         )
         st.plotly_chart(fig_sc, use_container_width=True)
