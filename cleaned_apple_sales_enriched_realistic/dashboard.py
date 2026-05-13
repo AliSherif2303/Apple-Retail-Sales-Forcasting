@@ -1014,11 +1014,12 @@ with tab6:
     # ── Metrics KPIs ──────────────────────────────────────────────────
     st.markdown('<div class="section-header">\U0001F4CA Model Evaluation Metrics</div>', unsafe_allow_html=True)
     mc1, mc2, mc3, mc4 = st.columns(4)
+    _r2_key = "R\u00b2"
     metric_items = [
         ("\U0001F4CF MAE",  f"${metrics['MAE']:,.0f}",  mc1),
         ("\U0001F4D0 RMSE", f"${metrics['RMSE']:,.0f}", mc2),
         ("\U0001F4C9 MAPE", f"{metrics['MAPE']:.2f}%",  mc3),
-        ("\U0001F3AF R\u00b2",    f"{metrics['R\u00b2']:.4f}",       mc4),
+        ("\U0001F3AF R\u00b2",    f"{metrics[_r2_key]:.4f}",       mc4),
     ]
     for label, value, col in metric_items:
         with col:
