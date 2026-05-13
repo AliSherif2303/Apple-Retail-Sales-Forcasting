@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Page 6 — SQL RAG Agent (uses local Ollama)"""
 import streamlit as st
+import pandas as pd
 from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore")
