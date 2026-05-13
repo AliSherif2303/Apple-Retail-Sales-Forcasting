@@ -334,7 +334,7 @@ with tab1:
         ts.columns = ["Period", "Revenue"]
     elif trend_gran == "Quarterly":
         ts = fdf.groupby(["year","quarter"])["sales_amount_realistic"].sum().reset_index()
-        ts["Period"] = ts["year"].astype(str) + " " + ts["quarter"]
+        ts["Period"] = ts["year"].astype(str) + " " + ts["quarter"].astype(str)
         ts = ts[["Period","sales_amount_realistic"]].rename(columns={"sales_amount_realistic":"Revenue"})
     else:
         ts = fdf.groupby("year")["sales_amount_realistic"].sum().reset_index()
