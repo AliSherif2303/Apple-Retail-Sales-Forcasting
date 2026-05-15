@@ -140,6 +140,7 @@ pages_info = [
     ("🗺️", "Market Clustering",       "K-Means city segmentation for expansion.",                      "/Market_Clustering"),
     ("🎯", "Target Market Validator", "Score & rank new markets for entry.",                           "/Target_Market_Validator"),
     ("🤖", "SQL RAG Agent",           "Ask questions in plain English using AI.",                      "/SQL_RAG_Agent"),
+    ("🔮", "Live Forecast",           "Pick a store & horizon — predict with CatBoost & AdaBoost.",   "/Live_Forecast"),
 ]
 
 cols = st.columns(3)
