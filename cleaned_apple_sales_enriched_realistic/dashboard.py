@@ -21,56 +21,47 @@ st.set_page_config(
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Dark gradient background */
-.stApp {
-    background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 40%, #0a0f1a 100%);
-}
+/* Canvas */
+.stApp { background: #000000; }
 
 /* Sidebar */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0d0d1a 0%, #111128 100%);
-    border-right: 1px solid rgba(99,102,241,0.2);
+    background: #1C1C1E;
+    border-right: 1px solid rgba(0,240,255,0.2);
 }
 
 /* KPI Cards */
 .kpi-card {
-    background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.08) 100%);
-    border: 1px solid rgba(99,102,241,0.3);
+    background: #1C1C1E;
+    border: 1px solid rgba(0,240,255,0.35);
     border-radius: 16px;
     padding: 20px 24px;
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    backdrop-filter: blur(10px);
 }
 .kpi-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(99,102,241,0.25);
+    box-shadow: 0 12px 40px rgba(0,240,255,0.2);
 }
 .kpi-value {
     font-size: 2.1rem;
     font-weight: 800;
-    background: linear-gradient(90deg, #818cf8, #c084fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #00F0FF;
     line-height: 1.1;
 }
 .kpi-label {
     font-size: 0.8rem;
     font-weight: 500;
-    color: #94a3b8;
+    color: #E1E1E6;
     margin-top: 6px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
 .kpi-delta {
     font-size: 0.85rem;
-    color: #34d399;
+    color: #39FF14;
     margin-top: 4px;
     font-weight: 600;
 }
@@ -79,7 +70,7 @@ html, body, [class*="css"] {
 .section-header {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #e2e8f0;
+    color: #FFFFFF;
     margin-bottom: 4px;
     display: flex;
     align-items: center;
@@ -89,7 +80,7 @@ html, body, [class*="css"] {
 /* Divider */
 .divider {
     border: none;
-    border-top: 1px solid rgba(99,102,241,0.2);
+    border-top: 1px solid rgba(0,240,255,0.2);
     margin: 24px 0;
 }
 
@@ -97,40 +88,37 @@ html, body, [class*="css"] {
 .main-title {
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(90deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #00F0FF;
     line-height: 1.2;
 }
 .sub-title {
     font-size: 1rem;
-    color: #64748b;
+    color: #A0A0A5;
     margin-top: 4px;
 }
 
 /* Tab styling */
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
-    background: rgba(15,15,30,0.6);
+    background: #1C1C1E;
     border-radius: 12px;
     padding: 6px;
-    border: 1px solid rgba(99,102,241,0.2);
+    border: 1px solid rgba(0,240,255,0.2);
 }
 .stTabs [data-baseweb="tab"] {
     font-weight: 600;
-    color: #64748b;
+    color: #A0A0A5;
     border-radius: 8px;
     padding: 8px 20px;
     transition: all 0.2s;
 }
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(139,92,246,0.3)) !important;
-    color: #c4b5fd !important;
+    background: rgba(0,240,255,0.15) !important;
+    color: #00F0FF !important;
 }
 
 /* Metric containers */
-[data-testid="stMetricValue"] { color: #818cf8 !important; font-weight: 700; }
+[data-testid="stMetricValue"] { color: #00F0FF !important; font-weight: 700; }
 [data-testid="stMetricDelta"] { font-weight: 600; }
 
 /* Plotly charts background */
@@ -194,12 +182,12 @@ def load_data():
 df, dim_economic, dim_product, dim_store = load_data()
 
 # ─── Plotly theme helper ─────────────────────────────────────────────
-CHART_BG   = "rgba(10,10,20,0)"
-PAPER_BG   = "rgba(10,10,20,0)"
-FONT_COLOR = "#cbd5e1"
-GRID_COLOR = "rgba(99,102,241,0.12)"
-PURPLE_SEQ = px.colors.sequential.Purp
-PALETTE    = ["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa","#fb923c","#a78bfa","#38bdf8","#4ade80"]
+CHART_BG   = "rgba(28,28,30,0.6)"
+PAPER_BG   = "rgba(0,0,0,0)"
+FONT_COLOR = "#E1E1E6"
+GRID_COLOR = "rgba(0,240,255,0.10)"
+PURPLE_SEQ = px.colors.sequential.Blues
+PALETTE    = ["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A","#FF6B6B","#4ECDC4"]
 
 def style_fig(fig, height=420):
     fig.update_layout(
@@ -209,13 +197,13 @@ def style_fig(fig, height=420):
         height=height,
         margin=dict(l=16, r=16, t=36, b=16),
         legend=dict(
-            bgcolor="rgba(15,15,30,0.7)",
-            bordercolor="rgba(99,102,241,0.25)",
+            bgcolor="rgba(28,28,30,0.85)",
+            bordercolor="rgba(0,240,255,0.3)",
             borderwidth=1,
             font=dict(size=11),
         ),
-        xaxis=dict(gridcolor=GRID_COLOR, zerolinecolor=GRID_COLOR, tickfont=dict(size=11)),
-        yaxis=dict(gridcolor=GRID_COLOR, zerolinecolor=GRID_COLOR, tickfont=dict(size=11)),
+        xaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)", tickfont=dict(size=11)),
+        yaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)", tickfont=dict(size=11)),
         colorway=PALETTE,
     )
     return fig
