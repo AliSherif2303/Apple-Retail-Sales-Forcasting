@@ -17,35 +17,36 @@ APP_DIR = Path(__file__).resolve().parent.parent
 PROJECT = APP_DIR.parent
 PROC = PROJECT / "data" / "processed"
 
-CHART_BG = "rgba(10,10,20,0)"
-PAPER_BG = "rgba(10,10,20,0)"
-FONT_COLOR = "#cbd5e1"
-GRID_COLOR = "rgba(99,102,241,0.12)"
-ADA_COLOR = "#818cf8"      # indigo for AdaBoost
-CAT_COLOR = "#f472b6"      # pink for CatBoost
-HIST_COLOR = "#34d399"     # green for historical
-PALETTE = ["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa","#fb923c","#a78bfa"]
+CHART_BG = "rgba(28,28,30,0.6)"
+PAPER_BG = "rgba(0,0,0,0)"
+FONT_COLOR = "#E1E1E6"
+GRID_COLOR = "rgba(0,240,255,0.10)"
+ADA_COLOR = "#00F0FF"      # cyan for AdaBoost
+CAT_COLOR = "#39FF14"      # neon green for CatBoost
+HIST_COLOR = "#A0A0A5"    # gray for historical
+PALETTE = ["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A"]
 
 def style_fig(fig, h=420):
     fig.update_layout(paper_bgcolor=PAPER_BG, plot_bgcolor=CHART_BG,
         font=dict(family="Inter, sans-serif", color=FONT_COLOR, size=12),
         height=h, margin=dict(l=16,r=16,t=42,b=16),
-        legend=dict(bgcolor="rgba(15,15,30,0.7)", bordercolor="rgba(99,102,241,0.25)", borderwidth=1),
-        xaxis=dict(gridcolor=GRID_COLOR), yaxis=dict(gridcolor=GRID_COLOR), colorway=PALETTE)
+        legend=dict(bgcolor="rgba(28,28,30,0.85)", bordercolor="rgba(0,240,255,0.3)", borderwidth=1),
+        xaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"),
+        yaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"), colorway=PALETTE)
 
 CSS = """<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 40%, #0a0f1a 100%); }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #0d0d1a 0%, #111128 100%); }
-.kpi-card { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08));
-  border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 20px 24px; text-align: center;
+.stApp { background: #000000; }
+[data-testid="stSidebar"] { background: #1C1C1E; border-right: 1px solid rgba(0,240,255,0.2); }
+.kpi-card { background: #1C1C1E;
+  border: 1px solid rgba(0,240,255,0.35); border-radius: 16px; padding: 20px 24px; text-align: center;
   transition: transform 0.2s ease; }
-.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(99,102,241,0.25); }
-.kpi-value { font-size: 1.8rem; font-weight: 800; color: #818cf8; }
-.kpi-label { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
-.section-header { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin: 28px 0 12px 0;
-  padding-bottom: 8px; border-bottom: 2px solid rgba(99,102,241,0.3); }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,240,255,0.2); }
+.kpi-value { font-size: 1.8rem; font-weight: 800; color: #00F0FF; }
+.kpi-label { font-size: 0.82rem; color: #E1E1E6; margin-top: 4px; }
+.section-header { font-size: 1.15rem; font-weight: 700; color: #FFFFFF; margin: 28px 0 12px 0;
+  padding-bottom: 8px; border-bottom: 2px solid rgba(0,240,255,0.4); }
 </style>"""
 st.markdown(CSS, unsafe_allow_html=True)
 

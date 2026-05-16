@@ -12,10 +12,10 @@ PROJECT = APP_DIR.parent
 CSS = """<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 40%, #0a0f1a 100%); }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #0d0d1a 0%, #111128 100%); }
-.section-header { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin: 28px 0 12px 0;
-  padding-bottom: 8px; border-bottom: 2px solid rgba(99,102,241,0.3); }
+.stApp { background: #000000; }
+[data-testid="stSidebar"] { background: #1C1C1E; border-right: 1px solid rgba(0,240,255,0.2); }
+.section-header { font-size: 1.15rem; font-weight: 700; color: #FFFFFF; margin: 28px 0 12px 0;
+  padding-bottom: 8px; border-bottom: 2px solid rgba(0,240,255,0.4); }
 </style>"""
 st.markdown(CSS, unsafe_allow_html=True)
 

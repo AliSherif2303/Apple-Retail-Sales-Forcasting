@@ -17,23 +17,36 @@ import warnings, joblib
 warnings.filterwarnings("ignore")
 
 # ─── Paths ────────────────────────────────────────────────────────────
-APP_DIR   = Path(__file__).resolve().parent.parent          # cleaned_apple_sales_enriched_realistic/
-PROJECT   = APP_DIR.parent                                  # Apple-Retail-Sales-Forcasting/
+APP_DIR   = Path(__file__).resolve().parent.parent          # /app/ in container
+PROJECT   = APP_DIR.parent                                  # parent of app dir
 PROC      = PROJECT / "data" / "processed"
-NB_DIR    = PROJECT / "notebooks"
-ADA_PATH  = NB_DIR / "ADA_LIVE.joblib"
-CAT_PATH  = NB_DIR / "CAT_LIVE.cbm"
+
+# Search for model files in multiple locations (handles different mount configs)
+def _find_model(filename: str) -> Path | None:
+    candidates = [
+        Path("/notebooks") / filename,          # docker volume ../notebooks:/notebooks
+        APP_DIR / filename,                      # copied directly into app dir
+        APP_DIR / "notebooks" / filename,        # notebooks subfolder in app dir
+        PROJECT / "notebooks" / filename,        # sibling notebooks/ folder
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+ADA_PATH  = _find_model("ADA_LIVE.joblib")
+CAT_PATH  = _find_model("CAT_LIVE.cbm")
 DATA_PATH = PROC / "cleaned_apple_sales_v3.csv"
 
 # ─── Visual Constants ─────────────────────────────────────────────────
-CHART_BG   = "rgba(10,10,20,0)"
-PAPER_BG   = "rgba(10,10,20,0)"
-FONT_COLOR = "#cbd5e1"
-GRID_COLOR = "rgba(99,102,241,0.12)"
-ADA_COLOR  = "#818cf8"
-CAT_COLOR  = "#f472b6"
-HIST_COLOR = "#34d399"
-PALETTE    = ["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa","#fb923c","#a78bfa"]
+CHART_BG   = "rgba(28,28,30,0.6)"
+PAPER_BG   = "rgba(0,0,0,0)"
+FONT_COLOR = "#E1E1E6"
+GRID_COLOR = "rgba(0,240,255,0.10)"
+ADA_COLOR  = "#00F0FF"
+CAT_COLOR  = "#39FF14"
+HIST_COLOR = "#A0A0A5"
+PALETTE    = ["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A"]
 
 # ─── Feature configuration (must match notebooks) ────────────────────
 TARGET    = "sales_amount_realistic"
@@ -60,10 +73,10 @@ def style_fig(fig, h=420):
         paper_bgcolor=PAPER_BG, plot_bgcolor=CHART_BG,
         font=dict(family="Inter, sans-serif", color=FONT_COLOR, size=12),
         height=h, margin=dict(l=16, r=16, t=42, b=16),
-        legend=dict(bgcolor="rgba(15,15,30,0.7)",
-                    bordercolor="rgba(99,102,241,0.25)", borderwidth=1),
-        xaxis=dict(gridcolor=GRID_COLOR),
-        yaxis=dict(gridcolor=GRID_COLOR),
+        legend=dict(bgcolor="rgba(28,28,30,0.85)",
+                    bordercolor="rgba(0,240,255,0.3)", borderwidth=1),
+        xaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"),
+        yaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"),
         colorway=PALETTE,
     )
 
@@ -84,16 +97,16 @@ def format_currency(val):
 CSS = """<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 40%, #0a0f1a 100%); }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #0d0d1a 0%, #111128 100%); }
-.kpi-card { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08));
-  border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 20px 24px; text-align: center;
+.stApp { background: #000000; }
+[data-testid="stSidebar"] { background: #1C1C1E; border-right: 1px solid rgba(0,240,255,0.2); }
+.kpi-card { background: #1C1C1E;
+  border: 1px solid rgba(0,240,255,0.35); border-radius: 16px; padding: 20px 24px; text-align: center;
   transition: transform 0.2s ease; }
-.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(99,102,241,0.25); }
-.kpi-value { font-size: 1.8rem; font-weight: 800; color: #818cf8; }
-.kpi-label { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
-.section-header { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin: 28px 0 12px 0;
-  padding-bottom: 8px; border-bottom: 2px solid rgba(99,102,241,0.3); }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,240,255,0.2); }
+.kpi-value { font-size: 1.8rem; font-weight: 800; color: #00F0FF; }
+.kpi-label { font-size: 0.82rem; color: #E1E1E6; margin-top: 4px; }
+.section-header { font-size: 1.15rem; font-weight: 700; color: #FFFFFF; margin: 28px 0 12px 0;
+  padding-bottom: 8px; border-bottom: 2px solid rgba(0,240,255,0.4); }
 </style>"""
 st.markdown(CSS, unsafe_allow_html=True)
 
@@ -108,14 +121,13 @@ st.markdown("*Select a store, choose a horizon, and get real-time predictions fr
 @st.cache_resource(show_spinner="Loading models...")
 def load_models():
     models = {}
-    # CatBoost
-    if CAT_PATH.exists():
+    if CAT_PATH and CAT_PATH.exists():
         from catboost import CatBoostRegressor
         cb = CatBoostRegressor()
         cb.load_model(str(CAT_PATH))
         models["CatBoost"] = cb
     # AdaBoost
-    if ADA_PATH.exists():
+    if ADA_PATH and ADA_PATH.exists():
         models["AdaBoost"] = joblib.load(ADA_PATH)
     return models
 
@@ -214,7 +226,20 @@ def load_and_preprocess():
 
 models = load_models()
 if not models:
-    st.error("No model files found! Please run CAT_LIVE.ipynb and/or ADA_LIVE.ipynb first.")
+    st.info(
+        "### ⚙️ Model Files Not Found\n\n"
+        "The model files exist on the VM but are not accessible inside the Docker container.\n\n"
+        "**Quickest fix — run this in SSH:**\n"
+        "```bash\n"
+        "cp ~/Apple-Retail-Sales-Forcasting/notebooks/ADA_LIVE.joblib \\\'\n"
+        "   ~/Apple-Retail-Sales-Forcasting/cleaned_apple_sales_enriched_realistic/\n"
+        "cp ~/Apple-Retail-Sales-Forcasting/notebooks/CAT_LIVE.cbm \\\'\n"
+        "   ~/Apple-Retail-Sales-Forcasting/cleaned_apple_sales_enriched_realistic/\n"
+        "```\n"
+        "Then refresh this page — no restart needed.\n\n"
+        "**Or permanently**, add `../notebooks:/notebooks` to the docker-compose.yml volumes "
+        "and run `docker compose restart streamlit-app`."
+    )
     st.stop()
 
 df_clean, store_lookup, label_encoder = load_and_preprocess()

@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/app                # app code + star-schema CSVs
       - ../data:/data         # processed forecast & sales CSVs for pages 2-6
+      - ../notebooks:/notebooks  # trained model files (ADA_LIVE.joblib, CAT_LIVE.cbm)
     depends_on:
       - ollama
     networks:
