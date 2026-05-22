@@ -39,33 +39,39 @@ except ImportError as e:
 # DB setup
 CSV_PATH = PROJECT / "data" / "processed" / "cleaned_apple_sales_v3.csv"
 DB_DIR = APP_DIR
-DB_PATH = DB_DIR / "rag_agent.sqlite"  # SQLite — full SQLAlchemy compatibility
+DB_PATH = DB_DIR / "rag_agent.db"
 
 @st.cache_resource(show_spinner="Building database...")
 def build_db():
     if not CSV_PATH.exists():
         return None, None, None
-    import os, sqlite3
+    import os, duckdb
 
-    # Build SQLite database from CSV using pandas (avoids duckdb-engine/SQLAlchemy incompatibility)
     if not DB_PATH.exists():
-        st.info("First run: loading CSV into SQLite (~30 s for large files)...")
-        cols = [
-            "sale_date", "store_name", "city", "country_norm_mapped",
-            "product_name", "category_name", "sales_amount_realistic",
-            "quantity_realistic", "price_realistic", "year", "month"
-        ]
-        # Read only needed columns to save memory
-        df = pd.read_csv(CSV_PATH, usecols=[c for c in cols if c in
-                         pd.read_csv(CSV_PATH, nrows=0).columns])
-        conn = sqlite3.connect(str(DB_PATH))
-        df.to_sql("sales", conn, if_exists="replace", index=False, chunksize=50_000)
-        conn.close()
+        st.info("First run: loading CSV into DuckDB...")
+        con = duckdb.connect(str(DB_PATH))
+        con.execute(f"CREATE TABLE sales AS SELECT * FROM read_csv_auto('{str(CSV_PATH)}')")
+        con.close()
+
+    custom_schema = """
+CREATE TABLE sales (
+    sale_date TIMESTAMP,
+    store_name VARCHAR,
+    city VARCHAR,
+    country_norm_mapped VARCHAR,
+    product_name VARCHAR,
+    category_name VARCHAR,
+    sales_amount_realistic DOUBLE,
+    quantity_realistic DOUBLE,
+    price_realistic DOUBLE,
+    year BIGINT,
+    month BIGINT
+);
+"""
 
     db = SQLDatabase.from_uri(
-        f"sqlite:///{DB_PATH}",
-        include_tables=["sales"],
-        sample_rows_in_table_info=3,
+        f"duckdb:///{DB_PATH}",
+        custom_table_info={"sales": custom_schema}
     )
     ollama_base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
     llm = ChatOllama(model="qwen2.5-coder:3b", temperature=0, base_url=ollama_base_url)
