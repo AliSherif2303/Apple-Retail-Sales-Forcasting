@@ -8,9 +8,6 @@ from pathlib import Path
 dashboard_dir = Path(__file__).resolve().parent.parent
 dashboard_path = dashboard_dir / "dashboard.py"
 
-# Patch st.set_page_config (already called by app.py)
-_original = st.set_page_config
-st.set_page_config = lambda **kwargs: None
 
 # Change working directory so DATA_PATH resolves correctly
 old_cwd = os.getcwd()
@@ -20,5 +17,4 @@ try:
     code = open(dashboard_path, encoding="utf-8").read()
     exec(compile(code, str(dashboard_path), "exec"), {"__file__": str(dashboard_path), "__name__": "__main__"})
 finally:
-    st.set_page_config = _original
     os.chdir(old_cwd)

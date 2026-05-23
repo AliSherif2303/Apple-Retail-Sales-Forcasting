@@ -54,11 +54,12 @@ st.markdown(f"""
 # Page cards
 pages_info = [
     ("🏠", "Dashboard",               "Interactive EDA with KPIs, trends, and market analysis.",      "/Dashboard"),
-    ("📈", "Long-Term Forecasting",   "Combined AdaBoost & CatBoost 12-month forecast.",              "/Long_Term_Forecasting"),
-    ("📊", "Short-Term Forecasting",  "Pre-computed model predictions by store.",                      "/Short_Term_Forecasting"),
+    ("📈", "Long-Term Forecasting",   "Live 12-month forecast using CatBoost & AdaBoost models.",     "/Long_Term_Forecasting"),
+    ("📊", "Short-Term Forecasting",  "Live 1-month forecast using CatBoost & AdaBoost models.",      "/Short_Term_Forecasting"),
     ("🗺️", "Market Clustering",       "K-Means city segmentation for expansion.",                      "/Market_Clustering"),
     ("🎯", "Target Market Validator", "Score & rank new markets for entry.",                           "/Target_Market_Validator"),
     ("🤖", "SQL RAG Agent",           "Ask questions in plain English using AI.",                      "/SQL_RAG_Agent"),
+    ("🔮", "Live Model Forecast",     "Real-time predictions using trained CatBoost and AdaBoost.",    "/Live_Forecast"),
 ]
 
 cols = st.columns(3)

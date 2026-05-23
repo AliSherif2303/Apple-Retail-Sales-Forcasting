@@ -6,6 +6,13 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore")
 
+st.set_page_config(
+    page_title="SQL RAG Agent",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 APP_DIR = Path(__file__).resolve().parent.parent
 PROJECT = APP_DIR.parent
 

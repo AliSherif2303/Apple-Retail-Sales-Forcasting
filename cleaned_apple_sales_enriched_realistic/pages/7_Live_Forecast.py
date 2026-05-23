@@ -16,6 +16,13 @@ import warnings, joblib
 
 warnings.filterwarnings("ignore")
 
+st.set_page_config(
+    page_title="Live Model Forecast",
+    page_icon="🔮",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 # ─── Paths ────────────────────────────────────────────────────────────
 APP_DIR   = Path(__file__).resolve().parent.parent          # /app/ in container
 PROJECT   = APP_DIR.parent                                  # parent of app dir

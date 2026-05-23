@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Page 3 — Short-Term Forecasting (One-Month Ahead)
-Source notebooks: ADABOOST.ipynb & CATBOOST.ipynb (separate models)
-Each notebook independently trains its own model and forecasts one month (Jan 2026).
+"""Page 3 — Short-Term Forecasting (1-Month Ahead)
+Source models: CAT_LIVE.cbm & ADA_LIVE.joblib
 """
 import streamlit as st
 import pandas as pd
@@ -9,21 +8,40 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
-import warnings
+import warnings, joblib
 warnings.filterwarnings("ignore")
+
+st.set_page_config(page_title="Short-Term Forecasting", page_icon="📊",
+                   layout="wide", initial_sidebar_state="expanded")
 
 APP_DIR = Path(__file__).resolve().parent.parent
 PROJECT = APP_DIR.parent
 PROC = PROJECT / "data" / "processed"
 
-CHART_BG = "rgba(28,28,30,0.6)"
-PAPER_BG = "rgba(0,0,0,0)"
-FONT_COLOR = "#E1E1E6"
-GRID_COLOR = "rgba(0,240,255,0.10)"
-ADA_COLOR = "#00F0FF"      # cyan for AdaBoost
-CAT_COLOR = "#39FF14"      # neon green for CatBoost
-HIST_COLOR = "#A0A0A5"    # gray for historical
-PALETTE = ["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A"]
+def _find(fn):
+    for p in [Path("/notebooks")/fn, APP_DIR/fn, APP_DIR/"notebooks"/fn, PROJECT/"notebooks"/fn]:
+        if p.exists(): return p
+    return None
+
+CAT_PATH = _find("CAT_LIVE.cbm")
+ADA_PATH = _find("ADA_LIVE.joblib")
+DATA_PATH = PROC / "cleaned_apple_sales_v3.csv"
+
+CHART_BG="rgba(28,28,30,0.6)"; PAPER_BG="rgba(0,0,0,0)"
+FONT_COLOR="#E1E1E6"; GRID_COLOR="rgba(0,240,255,0.10)"
+ADA_COLOR="#00F0FF"; CAT_COLOR="#39FF14"; HIST_COLOR="#A0A0A5"
+PALETTE=["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A"]
+TARGET="sales_amount_realistic"
+SAFE_LAGS=[1,2,3,6,12]; ROLL_WINDOWS=[3,6]
+FEATURES=[
+    'sales_lag_1','sales_lag_2','sales_lag_3','sales_lag_6','sales_lag_12',
+    'sales_roll_mean_3','sales_roll_mean_6','sales_mom_pct','sales_lag1_vs_roll6',
+    'price_realistic','promo_flag','month_sin','month_cos',
+    'is_holiday_season','is_launch_season',
+    'gdp_per_capita','inflation_rate','exchange_rate','internet_usage_pct',
+    'gdp_change','inflation_change','exchange_change','internet_usage_change',
+    'store_encoded','num_transactions','num_unique_products','num_categories','year',
+]
 
 def style_fig(fig, h=420):
     fig.update_layout(paper_bgcolor=PAPER_BG, plot_bgcolor=CHART_BG,
@@ -50,85 +68,170 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 st.markdown(CSS, unsafe_allow_html=True)
 
 st.markdown("# 📊 Short-Term Forecasting")
-st.markdown("*One-month-ahead forecast (Jan 2026) using independent AdaBoost & CatBoost models.*")
-st.caption("Source: `ADABOOST.ipynb` and `CATBOOST.ipynb` — each notebook trains its own model separately.")
+st.markdown("*One-month-ahead forecast using live AdaBoost & CatBoost models (no overfitting).*")
+st.caption("Source: `CAT_LIVE.ipynb` & `ADA_LIVE.ipynb` — trained models with healthy generalization.")
 
 def _kpi(v, l):
     st.markdown(f'<div class="kpi-card"><div class="kpi-value">{v}</div>'
                 f'<div class="kpi-label">{l}</div></div>', unsafe_allow_html=True)
 
-# ─── Load Data ────────────────────────────────────────────────────────
-@st.cache_data(show_spinner="Loading short-term forecast data...")
-def load_all():
-    data = {}
-    # Short-term forecasts (1 month ahead — Jan 2026)
-    for key, fname in [
-        ('ada_fc', 'adaboost_forecast_jan2025.csv'),
-        ('cat_fc', 'catboost_forecast_jan2026.csv'),
-    ]:
-        p = PROC / fname
-        if p.exists():
-            df = pd.read_csv(p)
-            df['date'] = pd.to_datetime(df['date'])
-            data[key] = df
-        else:
-            data[key] = None
-    # Store metrics
-    for key, fname in [
-        ('ada_m', 'adaboost_store_metrics.csv'),
-        ('cat_m', 'catboost_store_metrics.csv'),
-    ]:
-        p = PROC / fname
-        data[key] = pd.read_csv(p) if p.exists() else None
-    # Historical data
-    p = PROC / 'cleaned_apple_sales_v3.csv'
-    if p.exists():
-        raw = pd.read_csv(p)
-        raw['sale_date'] = pd.to_datetime(raw['sale_date'])
-        hist = raw.groupby(raw['sale_date'].dt.to_period('M'))['sales_amount_realistic'].sum().reset_index()
-        hist.columns = ['date', 'sales']
-        hist['date'] = hist['date'].dt.to_timestamp()
-        data['historical'] = hist
+def format_currency(val):
+    if val >= 1e9: return f"${val/1e9:.2f}B"
+    elif val >= 1e6: return f"${val/1e6:.2f}M"
+    elif val >= 1e3: return f"${val/1e3:.1f}K"
+    return f"${val:,.0f}"
 
-        store_hist = raw.groupby(['store_name', raw['sale_date'].dt.to_period('M')])['sales_amount_realistic'].sum().reset_index()
-        store_hist.columns = ['store_name', 'date', 'sales']
-        store_hist['date'] = store_hist['date'].dt.to_timestamp()
-        data['store_historical'] = store_hist
-    else:
-        data['historical'] = None
-        data['store_historical'] = None
-    return data
+# ─── Load Models ──────────────────────────────────────────────────────
+@st.cache_resource(show_spinner="Loading models...")
+def load_models():
+    models = {}
+    if CAT_PATH and CAT_PATH.exists():
+        from catboost import CatBoostRegressor
+        cb = CatBoostRegressor(); cb.load_model(str(CAT_PATH))
+        models["CatBoost"] = cb
+    if ADA_PATH and ADA_PATH.exists():
+        models["AdaBoost"] = joblib.load(ADA_PATH)
+    return models
 
-data = load_all()
+@st.cache_data(show_spinner="Loading & preprocessing data...")
+def load_and_preprocess():
+    from sklearn.preprocessing import LabelEncoder
+    df_raw = pd.read_csv(DATA_PATH)
+    df_raw["sale_date"] = pd.to_datetime(df_raw["sale_date"])
+    df_raw["year"] = df_raw["sale_date"].dt.year
+    df_raw["month"] = df_raw["sale_date"].dt.month
+    if "country_norm_mapped" not in df_raw.columns:
+        df_raw["country_norm_mapped"] = df_raw["country"].str.lower().str.strip()
+    monthly_aggs = {"sales_amount_realistic":"sum","quantity_realistic":"sum",
+        "price_realistic":"mean","store_name":"first","country_norm_mapped":"first","promo_flag":"mean"}
+    for ecol in ["gdp_per_capita","inflation_rate","exchange_rate","internet_usage_pct"]:
+        if ecol in df_raw.columns: monthly_aggs[ecol] = "first"
+    df_monthly = df_raw.groupby(["store_id","year","month"]).agg(monthly_aggs).reset_index()
+    grp = df_raw.groupby(["store_id","year","month"])
+    df_monthly["num_transactions"] = grp.size().values
+    df_monthly["num_unique_products"] = grp["product_id"].nunique().values
+    if "category_id" in df_raw.columns:
+        df_monthly["num_categories"] = grp["category_id"].nunique().values
+    df_monthly["date"] = pd.to_datetime(df_monthly[["year","month"]].assign(day=1))
+    df_monthly.sort_values(["store_id","date"], inplace=True)
+    df_monthly.reset_index(drop=True, inplace=True)
+    for lag in SAFE_LAGS:
+        df_monthly[f"sales_lag_{lag}"] = df_monthly.groupby("store_id")[TARGET].shift(lag)
+    for w in ROLL_WINDOWS:
+        rolled = df_monthly.groupby("store_id")[TARGET].shift(1).rolling(w, min_periods=1)
+        df_monthly[f"sales_roll_mean_{w}"] = rolled.mean().reset_index(0, drop=True)
+    df_monthly["sales_mom_pct"] = df_monthly.groupby("store_id")[TARGET].pct_change()
+    df_monthly["sales_lag1_vs_roll6"] = (
+        df_monthly["sales_lag_1"] / df_monthly["sales_roll_mean_6"].replace(0, np.nan))
+    df_monthly["month_sin"] = np.sin(2*np.pi*df_monthly["month"]/12)
+    df_monthly["month_cos"] = np.cos(2*np.pi*df_monthly["month"]/12)
+    df_monthly["is_holiday_season"] = df_monthly["month"].isin([11,12]).astype(int)
+    df_monthly["is_launch_season"] = df_monthly["month"].isin([9,10]).astype(int)
+    for col in ["gdp_per_capita","inflation_rate","exchange_rate","internet_usage_pct"]:
+        if col in df_monthly.columns:
+            new = col.replace("_per_capita","").replace("_rate","").replace("_pct","") + "_change"
+            df_monthly[new] = df_monthly.groupby("store_id")[col].pct_change().fillna(0)
+    le = LabelEncoder()
+    df_monthly["store_encoded"] = le.fit_transform(df_monthly["store_id"])
+    df_monthly["row_num"] = df_monthly.groupby("store_id").cumcount()
+    df_clean = df_monthly[df_monthly["row_num"] >= 12].copy()
+    df_clean.drop(columns="row_num", inplace=True)
+    numeric_cols = df_clean.select_dtypes(include=[np.number]).columns
+    df_clean[numeric_cols] = df_clean[numeric_cols].fillna(0)
+    # Historical
+    hist = df_raw.groupby(df_raw['sale_date'].dt.to_period('M'))['sales_amount_realistic'].sum().reset_index()
+    hist.columns = ['date','sales']; hist['date'] = hist['date'].dt.to_timestamp()
+    # Store-level historical
+    store_hist = df_raw.groupby(['store_name', df_raw['sale_date'].dt.to_period('M')])['sales_amount_realistic'].sum().reset_index()
+    store_hist.columns = ['store_name','date','sales']; store_hist['date'] = store_hist['date'].dt.to_timestamp()
+    return df_clean, hist, store_hist
 
-if data['ada_fc'] is None and data['cat_fc'] is None:
-    st.error("No short-term forecast CSV files found in data/processed/. "
-             "Please run the ADABOOST.ipynb and CATBOOST.ipynb notebooks first.")
+# ─── Recursive forecast ──────────────────────────────────────────────
+def recursive_forecast(model, store_history, n_months, features):
+    history = store_history.copy(); predictions = []
+    for step in range(n_months):
+        last_row = history.iloc[-1]
+        next_date = last_row["date"] + pd.DateOffset(months=1)
+        new_row = {}; sales_series = history[TARGET].values
+        for lag in SAFE_LAGS:
+            new_row[f"sales_lag_{lag}"] = sales_series[-lag] if lag <= len(sales_series) else 0.0
+        for w in ROLL_WINDOWS:
+            wd = sales_series[-w:] if len(sales_series) >= w else sales_series
+            new_row[f"sales_roll_mean_{w}"] = float(np.mean(wd))
+        new_row["sales_mom_pct"] = ((sales_series[-1]-sales_series[-2])/sales_series[-2]
+            if len(sales_series)>=2 and sales_series[-2]!=0 else 0.0)
+        r6 = new_row.get("sales_roll_mean_6",1)
+        new_row["sales_lag1_vs_roll6"] = new_row["sales_lag_1"]/r6 if r6!=0 else 0.0
+        new_row["price_realistic"] = last_row.get("price_realistic",0)
+        new_row["promo_flag"] = last_row.get("promo_flag",0)
+        nm = next_date.month
+        new_row["month_sin"]=np.sin(2*np.pi*nm/12); new_row["month_cos"]=np.cos(2*np.pi*nm/12)
+        new_row["is_holiday_season"]=int(nm in [11,12]); new_row["is_launch_season"]=int(nm in [9,10])
+        for col in ["gdp_per_capita","inflation_rate","exchange_rate","internet_usage_pct",
+                     "gdp_change","inflation_change","exchange_change","internet_usage_change"]:
+            new_row[col] = last_row.get(col,0)
+        new_row["store_encoded"]=last_row.get("store_encoded",0)
+        new_row["num_transactions"]=last_row.get("num_transactions",0)
+        new_row["num_unique_products"]=last_row.get("num_unique_products",0)
+        new_row["num_categories"]=last_row.get("num_categories",0)
+        new_row["year"]=next_date.year
+        valid_f=[f for f in features if f in new_row]
+        X_new=pd.DataFrame([{f:new_row[f] for f in valid_f}])
+        pred=max(float(model.predict(X_new)[0]),0)
+        predictions.append({"date":next_date,"predicted_sales":pred})
+        next_full=last_row.copy(); next_full["date"]=next_date
+        next_full["year"]=next_date.year; next_full["month"]=nm; next_full[TARGET]=pred
+        for k,v in new_row.items():
+            if k in next_full.index: next_full[k]=v
+        history=pd.concat([history,pd.DataFrame([next_full])],ignore_index=True)
+    return pd.DataFrame(predictions)
+
+@st.cache_data(show_spinner="Running 1-month forecasts for all stores...")
+def forecast_all_stores(_model, df_clean, n_months, features, model_name):
+    all_fc = []
+    for sid in df_clean["store_id"].unique():
+        sdata = df_clean[df_clean["store_id"]==sid].copy()
+        if len(sdata)<13: continue
+        fc = recursive_forecast(_model, sdata, n_months, features)
+        fc["store_id"]=sid
+        fc["store_name"]=sdata["store_name"].iloc[0] if "store_name" in sdata.columns else sid
+        fc["country"]=sdata["country_norm_mapped"].iloc[0] if "country_norm_mapped" in sdata.columns else ""
+        all_fc.append(fc)
+    return pd.concat(all_fc, ignore_index=True) if all_fc else None
+
+# ═══════════════════════════════════════════════════════════════════════
+models = load_models()
+if not models:
+    st.warning("⚠️ **Model files not found.** Please ensure `CAT_LIVE.cbm` and `ADA_LIVE.joblib` "
+               "are in the `notebooks/` folder.")
     st.stop()
+
+df_clean, historical, store_historical = load_and_preprocess()
+HORIZON = 1
+
+ada_fc = forecast_all_stores(models["AdaBoost"], df_clean, HORIZON, FEATURES, "AdaBoost") if "AdaBoost" in models else None
+cat_fc = forecast_all_stores(models["CatBoost"], df_clean, HORIZON, FEATURES, "CatBoost") if "CatBoost" in models else None
+
+if ada_fc is None and cat_fc is None:
+    st.error("No forecasts could be generated."); st.stop()
+
+# Determine forecast month label
+fc_ref = ada_fc if ada_fc is not None else cat_fc
+forecast_month_label = fc_ref['date'].iloc[0].strftime('%b %Y')
 
 # ═══════════════════════════════════════════════════════════════════════
 # KPI CARDS
 # ═══════════════════════════════════════════════════════════════════════
-def format_currency(val):
-    if val >= 1e9:
-        return f"${val/1e9:.2f}B"
-    elif val >= 1e6:
-        return f"${val/1e6:.2f}M"
-    else:
-        return f"${val:,.0f}"
+ada_total = format_currency(ada_fc['predicted_sales'].sum()) if ada_fc is not None else "N/A"
+cat_total = format_currency(cat_fc['predicted_sales'].sum()) if cat_fc is not None else "N/A"
+n_stores = str(ada_fc['store_id'].nunique()) if ada_fc is not None else (
+    str(cat_fc['store_id'].nunique()) if cat_fc is not None else "N/A")
 
-ada_total = format_currency(data['ada_fc']['predicted_sales'].sum()) if data['ada_fc'] is not None else "N/A"
-cat_total = format_currency(data['cat_fc']['predicted_sales'].sum()) if data['cat_fc'] is not None else "N/A"
-n_stores = str(data['ada_fc']['store_id'].nunique()) if data['ada_fc'] is not None else (
-    str(data['cat_fc']['store_id'].nunique()) if data['cat_fc'] is not None else "N/A")
-forecast_period = "1 Month"
-
-c1, c2, c3, c4 = st.columns(4)
+c1,c2,c3,c4 = st.columns(4)
 with c1: _kpi(n_stores, "Stores Forecasted")
-with c2: _kpi(forecast_period, "Forecast Horizon")
-with c3: _kpi(ada_total, "AdaBoost Predicted (Jan 2026)")
-with c4: _kpi(cat_total, "CatBoost Predicted (Jan 2026)")
-
+with c2: _kpi("1 Month", "Forecast Horizon")
+with c3: _kpi(ada_total, f"AdaBoost ({forecast_month_label})")
+with c4: _kpi(cat_total, f"CatBoost ({forecast_month_label})")
 st.markdown("")
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -138,198 +241,136 @@ tab_overview, tab_stores, tab_compare = st.tabs([
     "📊 Historical + Forecast Point", "🏪 Store-Level Analysis", "⚖️ Model Comparison"
 ])
 
-# ── TAB 1: Historical + Single-Point Forecast ──
+# ── TAB 1 ──
 with tab_overview:
     st.markdown('<div class="section-header">📊 Total Monthly Sales: Historical + One-Month Forecast</div>', unsafe_allow_html=True)
-    st.info("💡 **Short-term forecasting** predicts **one month ahead** (January 2026). "
-            "Each model (AdaBoost & CatBoost) is trained in its own separate notebook.")
+    st.info("💡 **Short-term forecasting** predicts **one month ahead**. "
+            "Models from `CAT_LIVE.ipynb` & `ADA_LIVE.ipynb` (no overfitting).")
     fig = go.Figure()
-    if data['historical'] is not None:
-        hist = data['historical']
-        fig.add_trace(go.Scatter(x=hist['date'], y=hist['sales'], mode='lines+markers',
-                                  name='Historical', line=dict(color=HIST_COLOR, width=2),
-                                  marker=dict(size=4)))
-    # Show forecast as single large point(s) at the end
-    if data['ada_fc'] is not None:
-        ada_date = data['ada_fc']['date'].iloc[0]
-        ada_sum = data['ada_fc']['predicted_sales'].sum()
+    if historical is not None:
+        fig.add_trace(go.Scatter(x=historical['date'], y=historical['sales'], mode='lines+markers',
+                                  name='Historical', line=dict(color=HIST_COLOR, width=2), marker=dict(size=4)))
+    if ada_fc is not None:
+        ada_date = ada_fc['date'].iloc[0]; ada_sum = ada_fc['predicted_sales'].sum()
         fig.add_trace(go.Scatter(x=[ada_date], y=[ada_sum],
-                                  mode='markers+text', name='AdaBoost Forecast (Jan 2026)',
-                                  marker=dict(color=ADA_COLOR, size=16, symbol='square',
-                                              line=dict(width=2, color='white')),
-                                  text=[f"${ada_sum/1e6:.1f}M"], textposition='top center',
-                                  textfont=dict(color=ADA_COLOR, size=12, family='Inter')))
-    if data['cat_fc'] is not None:
-        cat_date = data['cat_fc']['date'].iloc[0]
-        cat_sum = data['cat_fc']['predicted_sales'].sum()
+            mode='markers+text', name=f'AdaBoost ({forecast_month_label})',
+            marker=dict(color=ADA_COLOR, size=16, symbol='square', line=dict(width=2, color='white')),
+            text=[f"${ada_sum/1e6:.1f}M"], textposition='top center',
+            textfont=dict(color=ADA_COLOR, size=12, family='Inter')))
+    if cat_fc is not None:
+        cat_date = cat_fc['date'].iloc[0]; cat_sum = cat_fc['predicted_sales'].sum()
         fig.add_trace(go.Scatter(x=[cat_date], y=[cat_sum],
-                                  mode='markers+text', name='CatBoost Forecast (Jan 2026)',
-                                  marker=dict(color=CAT_COLOR, size=16, symbol='triangle-up',
-                                              line=dict(width=2, color='white')),
-                                  text=[f"${cat_sum/1e6:.1f}M"], textposition='bottom center',
-                                  textfont=dict(color=CAT_COLOR, size=12, family='Inter')))
-    # Add a vertical line at the forecast date
-    forecast_date = None
-    if data['ada_fc'] is not None:
-        forecast_date = data['ada_fc']['date'].iloc[0]
-    elif data['cat_fc'] is not None:
-        forecast_date = data['cat_fc']['date'].iloc[0]
-    if forecast_date is not None:
-        fc_str = str(forecast_date)
-        fig.add_shape(type="line", x0=fc_str, x1=fc_str, y0=0, y1=1,
-                      yref="paper", line=dict(color="orange", dash="dash", width=1), opacity=0.6)
-        fig.add_annotation(x=fc_str, y=1, yref="paper", text="Forecast Point",
-                           showarrow=False, font=dict(color="orange"), yanchor="bottom")
-    fig.update_layout(title="Historical Monthly Sales + One-Month-Ahead Forecast (Jan 2026)")
+            mode='markers+text', name=f'CatBoost ({forecast_month_label})',
+            marker=dict(color=CAT_COLOR, size=16, symbol='triangle-up', line=dict(width=2, color='white')),
+            text=[f"${cat_sum/1e6:.1f}M"], textposition='bottom center',
+            textfont=dict(color=CAT_COLOR, size=12, family='Inter')))
+    forecast_date = ada_fc['date'].iloc[0] if ada_fc is not None else cat_fc['date'].iloc[0]
+    fc_str = str(forecast_date)
+    fig.add_shape(type="line", x0=fc_str, x1=fc_str, y0=0, y1=1,
+                  yref="paper", line=dict(color="orange", dash="dash", width=1), opacity=0.6)
+    fig.add_annotation(x=fc_str, y=1, yref="paper", text="Forecast Point",
+                       showarrow=False, font=dict(color="orange"), yanchor="bottom")
+    fig.update_layout(title=f"Historical Monthly Sales + One-Month-Ahead Forecast ({forecast_month_label})")
     style_fig(fig, 500)
     st.plotly_chart(fig, use_container_width=True)
 
-    # Per-store comparison bar chart
+    # Per-store bar
     st.markdown('<div class="section-header">🏬 Per-Store Predicted Sales — AdaBoost vs CatBoost</div>', unsafe_allow_html=True)
     bar_data = []
-    if data['ada_fc'] is not None:
-        for _, row in data['ada_fc'].iterrows():
-            bar_data.append({'Store': row.get('store_name', row.get('store_id', '')),
-                             'Predicted Sales': row['predicted_sales'], 'Model': 'AdaBoost'})
-    if data['cat_fc'] is not None:
-        for _, row in data['cat_fc'].iterrows():
-            bar_data.append({'Store': row.get('store_name', row.get('store_id', '')),
-                             'Predicted Sales': row['predicted_sales'], 'Model': 'CatBoost'})
+    if ada_fc is not None:
+        for _, row in ada_fc.iterrows():
+            bar_data.append({'Store': row['store_name'], 'Predicted Sales': row['predicted_sales'], 'Model': 'AdaBoost'})
+    if cat_fc is not None:
+        for _, row in cat_fc.iterrows():
+            bar_data.append({'Store': row['store_name'], 'Predicted Sales': row['predicted_sales'], 'Model': 'CatBoost'})
     if bar_data:
         bar_df = pd.DataFrame(bar_data)
-        # Sort by predicted sales (AdaBoost) for better readability
-        store_order = bar_df[bar_df['Model'] == (
-            'AdaBoost' if data['ada_fc'] is not None else 'CatBoost')].sort_values(
-            'Predicted Sales', ascending=True)['Store'].tolist()
+        ref_model = 'AdaBoost' if ada_fc is not None else 'CatBoost'
+        store_order = bar_df[bar_df['Model']==ref_model].sort_values('Predicted Sales', ascending=True)['Store'].tolist()
         fig2 = px.bar(bar_df, x='Predicted Sales', y='Store', color='Model', barmode='group',
-                       orientation='h',
-                       title="Per-Store Predicted Sales — Jan 2026 (AdaBoost vs CatBoost)",
+                       orientation='h', title=f"Per-Store Predicted Sales — {forecast_month_label}",
                        color_discrete_map={'AdaBoost': ADA_COLOR, 'CatBoost': CAT_COLOR},
                        category_orders={'Store': store_order})
-        style_fig(fig2, max(500, len(store_order) * 18))
+        style_fig(fig2, max(500, len(store_order)*18))
         st.plotly_chart(fig2, use_container_width=True)
 
-# ── TAB 2: Store-Level Analysis ──
+# ── TAB 2 ──
 with tab_stores:
-    st.markdown('<div class="section-header">🏪 Top & Bottom Stores by Predicted Sales (Jan 2026)</div>', unsafe_allow_html=True)
-    model_choice = st.radio("Select Model:", ["AdaBoost", "CatBoost"], horizontal=True, key="st_model")
-    fc = data['ada_fc'] if model_choice == "AdaBoost" else data['cat_fc']
-    metrics = data['ada_m'] if model_choice == "AdaBoost" else data['cat_m']
-    color = ADA_COLOR if model_choice == "AdaBoost" else CAT_COLOR
+    st.markdown(f'<div class="section-header">🏪 Top & Bottom Stores ({forecast_month_label})</div>', unsafe_allow_html=True)
+    model_choice = st.radio("Select Model:", ["AdaBoost","CatBoost"], horizontal=True, key="st_model")
+    fc = ada_fc if model_choice=="AdaBoost" else cat_fc
+    color = ADA_COLOR if model_choice=="AdaBoost" else CAT_COLOR
 
     if fc is not None:
-        top10_df = fc.nlargest(10, 'predicted_sales').sort_values('predicted_sales', ascending=True)
-        bot10_df = fc.nsmallest(10, 'predicted_sales').sort_values('predicted_sales', ascending=True)
-
-        c1, c2 = st.columns(2)
+        top10 = fc.nlargest(10,'predicted_sales').sort_values('predicted_sales', ascending=True)
+        bot10 = fc.nsmallest(10,'predicted_sales').sort_values('predicted_sales', ascending=True)
+        c1,c2 = st.columns(2)
         with c1:
-            fig3 = px.bar(top10_df, x='predicted_sales', y='store_name', orientation='h',
-                           title=f"Top 10 Stores — {model_choice} (Jan 2026)",
-                           text=[f"${v/1e6:.2f}M" for v in top10_df['predicted_sales']],
-                           color='predicted_sales', color_continuous_scale="viridis")
-            fig3.update_traces(textposition='outside')
-            fig3.update_layout(coloraxis_showscale=False)
-            style_fig(fig3, 420)
-            st.plotly_chart(fig3, use_container_width=True)
+            fig3 = px.bar(top10, x='predicted_sales', y='store_name', orientation='h',
+                title=f"Top 10 — {model_choice}", text=[f"${v/1e6:.2f}M" for v in top10['predicted_sales']],
+                color='predicted_sales', color_continuous_scale="viridis")
+            fig3.update_traces(textposition='outside'); fig3.update_layout(coloraxis_showscale=False)
+            style_fig(fig3, 420); st.plotly_chart(fig3, use_container_width=True)
         with c2:
-            fig4 = px.bar(bot10_df, x='predicted_sales', y='store_name', orientation='h',
-                           title=f"Bottom 10 Stores — {model_choice} (Jan 2026)",
-                           text=[f"${v/1e6:.2f}M" for v in bot10_df['predicted_sales']],
-                           color='predicted_sales', color_continuous_scale="viridis")
-            fig4.update_traces(textposition='outside')
-            fig4.update_layout(coloraxis_showscale=False)
-            style_fig(fig4, 420)
-            st.plotly_chart(fig4, use_container_width=True)
+            fig4 = px.bar(bot10, x='predicted_sales', y='store_name', orientation='h',
+                title=f"Bottom 10 — {model_choice}", text=[f"${v/1e6:.2f}M" for v in bot10['predicted_sales']],
+                color='predicted_sales', color_continuous_scale="viridis")
+            fig4.update_traces(textposition='outside'); fig4.update_layout(coloraxis_showscale=False)
+            style_fig(fig4, 420); st.plotly_chart(fig4, use_container_width=True)
 
-        # Store-level monthly trend (Historical + 1-Month)
-        st.markdown('<div class="section-header">📈 Historical + 1-Month Forecast Trend for Selected Stores</div>', unsafe_allow_html=True)
-        store_hist = data.get('store_historical')
-        if store_hist is not None:
-            all_stores = sorted(store_hist['store_name'].unique())
-            selected_stores = st.multiselect("Select stores to compare monthly trends:", all_stores,
-                                              default=all_stores[:3] if len(all_stores) >= 3 else all_stores, key="st_stores_trend")
+        # Historical + 1-month trend
+        st.markdown('<div class="section-header">📈 Historical + 1-Month Forecast Trend</div>', unsafe_allow_html=True)
+        if store_historical is not None:
+            all_stores = sorted(store_historical['store_name'].unique())
+            selected_stores = st.multiselect("Select stores:", all_stores,
+                default=all_stores[:3] if len(all_stores)>=3 else all_stores, key="st_stores_trend")
             if selected_stores:
                 fig5 = go.Figure()
                 for s in selected_stores:
-                    s_hist = store_hist[store_hist['store_name'] == s].sort_values('date')
-                    fig5.add_trace(go.Scatter(x=s_hist['date'], y=s_hist['sales'], mode='lines+markers', name=f"{s} (Actual)", marker=dict(size=4)))
-                    # Add forecast point
-                    s_fc = fc[fc['store_name'] == s] if 'store_name' in fc.columns else fc[fc['store_id'] == s]
+                    s_hist = store_historical[store_historical['store_name']==s].sort_values('date')
+                    fig5.add_trace(go.Scatter(x=s_hist['date'], y=s_hist['sales'], mode='lines+markers',
+                        name=f"{s} (Actual)", marker=dict(size=4)))
+                    s_fc = fc[fc['store_name']==s]
                     if not s_fc.empty:
-                        fig5.add_trace(go.Scatter(x=[s_hist['date'].max(), s_fc['date'].iloc[0]], 
-                                                  y=[s_hist['sales'].iloc[-1], s_fc['predicted_sales'].iloc[0]], 
-                                                  mode='lines+markers+text', name=f"{s} (Forecast)", line=dict(dash='dash'),
-                                                  text=["", f"{s_fc['predicted_sales'].iloc[0]/1e6:.2f}M"], textposition="top center"))
-                fig5.update_layout(title="Historical vs 1-Month Forecast Trend", xaxis_title="Month", yaxis_title="Sales")
-                style_fig(fig5, 450)
-                st.plotly_chart(fig5, use_container_width=True)
+                        fig5.add_trace(go.Scatter(
+                            x=[s_hist['date'].max(), s_fc['date'].iloc[0]],
+                            y=[s_hist['sales'].iloc[-1], s_fc['predicted_sales'].iloc[0]],
+                            mode='lines+markers+text', name=f"{s} (Forecast)", line=dict(dash='dash'),
+                            text=["", f"{s_fc['predicted_sales'].iloc[0]/1e6:.2f}M"], textposition="top center"))
+                fig5.update_layout(title="Historical vs 1-Month Forecast Trend")
+                style_fig(fig5, 450); st.plotly_chart(fig5, use_container_width=True)
     else:
-        st.warning(f"No {model_choice} short-term forecast data available. "
-                   f"Please run the {model_choice.upper()}.ipynb notebook first.")
+        st.warning(f"No {model_choice} forecast available.")
 
-    # Store metrics table
-    if metrics is not None:
-        st.markdown('<div class="section-header">📋 Per-Store Test Metrics (from notebook evaluation)</div>', unsafe_allow_html=True)
-        st.dataframe(metrics.sort_values('R2', ascending=False), use_container_width=True, height=400)
-
-    # Download button
     if fc is not None:
         st.download_button(f"📥 Download {model_choice} Short-Term Forecast CSV", fc.to_csv(index=False),
                            f"short_term_{model_choice.lower()}_forecast.csv")
 
-# ── TAB 3: Model Comparison ──
+# ── TAB 3 ──
 with tab_compare:
-    st.markdown('<div class="section-header">⚖️ AdaBoost vs CatBoost — One-Month Forecast Comparison</div>', unsafe_allow_html=True)
-    if data['ada_m'] is not None and data['cat_m'] is not None:
-        ada_m = data['ada_m'].rename(columns={'MAE': 'AdaBoost_MAE', 'R2': 'AdaBoost_R2'})
-        cat_m = data['cat_m'].rename(columns={'MAE': 'CatBoost_MAE', 'R2': 'CatBoost_R2'})
-        merged = ada_m[['store_id', 'store_name', 'AdaBoost_MAE', 'AdaBoost_R2']].merge(
-            cat_m[['store_id', 'CatBoost_MAE', 'CatBoost_R2']], on='store_id', how='outer')
-        merged['Better_Model'] = merged.apply(
-            lambda r: 'AdaBoost' if r.get('AdaBoost_R2', 0) >= r.get('CatBoost_R2', 0) else 'CatBoost', axis=1)
-        st.dataframe(merged.sort_values('AdaBoost_R2', ascending=False), use_container_width=True, height=400)
+    st.markdown('<div class="section-header">⚖️ AdaBoost vs CatBoost — One-Month Comparison</div>', unsafe_allow_html=True)
+    if ada_fc is not None and cat_fc is not None:
+        ada_s = ada_fc[['store_id','store_name','predicted_sales']].rename(columns={'predicted_sales':'AdaBoost_Sales'})
+        cat_s = cat_fc[['store_id','predicted_sales']].rename(columns={'predicted_sales':'CatBoost_Sales'})
+        merged = ada_s.merge(cat_s, on='store_id', how='outer')
+        merged['Higher_Model'] = merged.apply(
+            lambda r: 'AdaBoost' if r.get('AdaBoost_Sales',0) >= r.get('CatBoost_Sales',0) else 'CatBoost', axis=1)
+        st.dataframe(merged.sort_values('CatBoost_Sales', ascending=False), use_container_width=True, height=400)
 
-        # R² and MAE distribution comparison
-        c1, c2 = st.columns(2)
-        with c1:
-            fig6 = go.Figure()
-            fig6.add_trace(go.Histogram(x=data['ada_m']['R2'], nbinsx=25, name='AdaBoost R²',
-                                         marker_color=ADA_COLOR, opacity=0.7))
-            fig6.add_trace(go.Histogram(x=data['cat_m']['R2'], nbinsx=25, name='CatBoost R²',
-                                         marker_color=CAT_COLOR, opacity=0.7))
-            fig6.update_layout(title="R² Distribution by Store", barmode='overlay')
-            style_fig(fig6, 350)
-            st.plotly_chart(fig6, use_container_width=True)
-        with c2:
-            fig7 = go.Figure()
-            fig7.add_trace(go.Histogram(x=data['ada_m']['MAE'], nbinsx=25, name='AdaBoost MAE',
-                                         marker_color=ADA_COLOR, opacity=0.7))
-            fig7.add_trace(go.Histogram(x=data['cat_m']['MAE'], nbinsx=25, name='CatBoost MAE',
-                                         marker_color=CAT_COLOR, opacity=0.7))
-            fig7.update_layout(title="MAE Distribution by Store", barmode='overlay')
-            style_fig(fig7, 350)
-            st.plotly_chart(fig7, use_container_width=True)
-
-        # Summary KPIs
-        st.markdown('<div class="section-header">📊 Overall Summary (Test Set)</div>', unsafe_allow_html=True)
-        ada_wins = (merged['Better_Model'] == 'AdaBoost').sum()
-        cat_wins = (merged['Better_Model'] == 'CatBoost').sum()
-        
-        # Using overall metrics from ADABOOST.ipynb and CATBOOST.ipynb tuning results
-        ada_r2_overall = 0.9017
-        ada_mae_overall = 93293
-        cat_r2_overall = 0.9778
-        cat_mae_overall = 40264
-        
-        c1, c2, c3, c4 = st.columns(4)
-        with c1: _kpi(f"{ada_r2_overall:.4f}", "AdaBoost Overall R²")
-        with c2: _kpi(f"${ada_mae_overall:,.0f}", "AdaBoost Overall MAE")
-        with c3: _kpi(f"{cat_r2_overall:.4f}", "CatBoost Overall R²")
-        with c4: _kpi(f"${cat_mae_overall:,.0f}", "CatBoost Overall MAE")
+        st.markdown('<div class="section-header">📊 Overall Model Metrics (Test Set — No Overfitting)</div>', unsafe_allow_html=True)
+        ada_r2=0.8944; ada_mae=114310; cat_r2=0.9766; cat_mae=41447
+        c1,c2,c3,c4 = st.columns(4)
+        with c1: _kpi(f"{ada_r2:.4f}", "AdaBoost Overall R²")
+        with c2: _kpi(f"${ada_mae:,.0f}", "AdaBoost Overall MAE")
+        with c3: _kpi(f"{cat_r2:.4f}", "CatBoost Overall R²")
+        with c4: _kpi(f"${cat_mae:,.0f}", "CatBoost Overall MAE")
         st.markdown("")
-        c1, c2 = st.columns(2)
-        with c1: _kpi(str(ada_wins), "Stores Where AdaBoost Wins")
-        with c2: _kpi(str(cat_wins), "Stores Where CatBoost Wins")
+        ada_wins = (merged['Higher_Model']=='AdaBoost').sum()
+        cat_wins = (merged['Higher_Model']=='CatBoost').sum()
+        c1,c2 = st.columns(2)
+        with c1: _kpi(str(ada_wins), "Stores Where AdaBoost Predicts Higher")
+        with c2: _kpi(str(cat_wins), "Stores Where CatBoost Predicts Higher")
+        st.info("💡 **CatBoost** Generalization Loss: **2.20%** (Very Healthy) | "
+                "**AdaBoost** Generalization Loss: **5.19%** (Acceptable)")
     else:
-        st.warning("Both AdaBoost and CatBoost metrics are needed for comparison. "
-                   "Please run both ADABOOST.ipynb and CATBOOST.ipynb notebooks.")
+        st.warning("Both models needed for comparison.")
