@@ -172,9 +172,3 @@ Once launched, the dashboard exposes 7 interactive modules:
 
 ---
 
-## ⚠️ local-only & Ignored Files Alert
-To save storage space on GitHub and keep your pulls/pushes running at high speeds, large and binary files have been added to `.gitignore` and **removed from remote tracking, but are kept locally in your folder**:
-* **Power BI Dashboards**: `old gr.pbix` (63.6 MB) and `test1.pbix` (37.3 MB).
-* **Large Datasets**: `fact_sales.csv` (75.1 MB) in the project root.
-* **Model Logs**: `catboost_info/` and PyTorch Lightning logs `notebooks/lightning_logs/`.
-* *Caution*: Never run `git clean -fdx` or force-clean commands, as it will delete these local files from your workspace.
