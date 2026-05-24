@@ -1,7 +1,7 @@
 # 🍏 Apple Retail Sales Forecasting — Full Project Explanation
 
 > **Project:** Apple Retail Sales Forecasting  
-> **Authors:** Ali Sherif Salaheldin, Abdelrahman Mohamed Mahmoud  
+> **Authors:** Ali Sherif Salaheldin, Ali Mohamed, Hassan saad, Ahmed adel, Mohammed azzam  
 > **GitHub:** [AliSherif2303/Apple-Retail-Sales-Forcasting](https://github.com/AliSherif2303/Apple-Retail-Sales-Forcasting)
 
 ---
