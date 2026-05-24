@@ -26,6 +26,9 @@ data/processed/*.zip
 data/temp/
 data/interim/
 reports/figures/
+# Large files and Power BI backups
+/fact_sales.csv
+*.pbix
 
 # --- IDE / Editor ---
 .vscode/
@@ -37,3 +40,7 @@ reports/figures/
 
 # --- OS files ---
 Thumbs.db
+
+# --- Training logs ---
+catboost_info/
+lightning_logs/
