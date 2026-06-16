@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Page 5 — Target Market Validator (pre-computed results explorer)"""
+"""Page 5 — Target Market Validator (pre-computed results from market_expansion_intelligence.csv)"""
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -21,15 +21,18 @@ APP_DIR = Path(__file__).resolve().parent.parent
 PALETTE = ["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa"]
 
 DECISION_CONFIG = {
-    "STRONG YES": {"color": "#10b981", "bg": "rgba(16,185,129,0.15)", "border": "rgba(16,185,129,0.5)",  "emoji": "🚀"},
-    "YES":        {"color": "#34d399", "bg": "rgba(52,211,153,0.12)",  "border": "rgba(52,211,153,0.4)",  "emoji": "✅"},
-    "CONSIDER":   {"color": "#fbbf24", "bg": "rgba(251,191,36,0.12)",  "border": "rgba(251,191,36,0.4)",  "emoji": "🤔"},
-    "CAUTIOUS":   {"color": "#fb923c", "bg": "rgba(251,146,60,0.12)",  "border": "rgba(251,146,60,0.4)",  "emoji": "⚠️"},
-    "NO":         {"color": "#ef4444", "bg": "rgba(239,68,68,0.12)",   "border": "rgba(239,68,68,0.4)",   "emoji": "❌"},
+    "EXPAND NOW":            {"color": "#10b981", "bg": "rgba(16,185,129,0.15)",  "border": "rgba(16,185,129,0.5)",  "emoji": "🚀"},
+    "HIGH PRIORITY":         {"color": "#34d399", "bg": "rgba(52,211,153,0.12)",  "border": "rgba(52,211,153,0.4)",  "emoji": "✅"},
+    "PILOT FIRST":           {"color": "#fbbf24", "bg": "rgba(251,191,36,0.12)",  "border": "rgba(251,191,36,0.4)",  "emoji": "🧪"},
+    "CONSIDER WITH CAUTION": {"color": "#fb923c", "bg": "rgba(251,146,60,0.12)",  "border": "rgba(251,146,60,0.4)",  "emoji": "⚠️"},
+    "MONITOR":               {"color": "#60a5fa", "bg": "rgba(96,165,250,0.12)",  "border": "rgba(96,165,250,0.4)",  "emoji": "👁️"},
+    "WAIT":                  {"color": "#94a3b8", "bg": "rgba(148,163,184,0.10)", "border": "rgba(148,163,184,0.3)", "emoji": "⏳"},
+    "AVOID":                 {"color": "#ef4444", "bg": "rgba(239,68,68,0.12)",   "border": "rgba(239,68,68,0.4)",   "emoji": "❌"},
 }
+
 PRIORITY_COLOR = {
     "Very High": "#10b981", "High": "#34d399",
-    "Medium": "#fbbf24",    "Low": "#fb923c",
+    "Medium": "#fbbf24",    "Low": "#fb923c",   "Very Low": "#ef4444",
 }
 
 def style_fig(fig, h=400):
@@ -69,56 +72,13 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 </style>"""
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ── Inline data (avoids git-lfs issues on VM) ─────────────────────────
-import io
-
-_CSV = """Rank,Country,GDP,Population,Internet,Market_Score,Priority,Estimated_Annual_Sales_M,Confidence,Expansion_Decision,Risk_Level,Decision_Reason,Inflation,ExchangeRate
-1,Belgium,56614.57,2150300,95.78,6,High,249.05,High (GDP within known range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (6/8); $249M potential; High GDP | Cons: Small population (2.2M)",3.14,0.92
-2,Saudi Arabia,35121.66,7950000,100.0,5,High,587.77,High (GDP within known range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (5/8); $588M potential; High GDP | Cons: Small population (8.0M)",1.69,3.75
-3,Denmark,71026.48,1409680,99.77,5,High,276.62,High (GDP within known range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (5/8); $277M potential; High GDP | Cons: Small population (1.4M)",1.37,6.89
-4,Sweden,57117.49,1730000,95.53,5,High,201.81,High (GDP within known range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (5/8); $202M potential; High GDP | Cons: Small population (1.7M)",2.84,10.57
-5,Russian Federation,14889.02,12750000,94.37,5,High,167.43,High (GDP within known range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (5/8); $167M potential; Excellent digital (94%)",8.43,92.55
-6,Luxembourg,137781.68,138000,98.76,5,High,79.79,Medium (GDP outside historical range),YES,Low-Medium,"Strong market opportunity with manageable risks | Pros: Strong score (5/8); $80M potential; Very High GDP | Cons: Very small population (0.1M)",2.05,0.92
-7,Argentina,13969.78,15890600,89.67,4,Medium,211.58,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $212M potential; Good digital (90%) | Cons: High inflation (219.9%)",219.88,914.69
-8,Malaysia,11874.43,8900000,98.02,4,Medium,111.79,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $112M potential; Excellent digital (98%) | Cons: Small population (8.9M)",1.83,4.58
-9,Israel,54176.68,1020000,88.18,4,Medium,107.16,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $107M potential; High GDP | Cons: Small population (1.0M)",3.07,3.70
-10,Egypt Arab Rep.,3338.47,22600000,72.22,3,Medium,205.47,Medium (GDP outside historical range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $205M potential; Large population | Cons: Low GDP; High inflation (28.3%)",28.27,45.30
-11,Peru,8452.37,11600000,81.96,3,Medium,129.89,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $130M potential; Good digital (82%)",2.01,3.75
-12,Indonesia,4925.43,11400000,72.78,3,Medium,118.78,Medium (GDP outside historical range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $119M potential; Good digital (73%) | Cons: Low GDP",2.18,15855.45
-13,Turkiye,15892.72,5500000,87.31,3,Medium,101.35,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $101M potential; Upper-middle income | Cons: High inflation (58.5%)",58.51,32.81
-14,Dominican Republic,10875.66,3680000,91.00,3,Medium,44.03,High (GDP within known range),CONSIDER,Medium,"Moderate opportunity with good sales potential | Pros: $44M potential; Good digital (91%) | Cons: Small population (3.7M)",3.30,59.57
-15,Portugal,29292.24,3010000,88.49,2,Low,161.33,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $161M potential; Upper-middle income | Cons: Low score (2/8); Small population (3.0M)",2.42,0.92
-16,Kenya,2132.43,5650000,34.98,2,Low,90.09,Medium (GDP outside historical range),CAUTIOUS,High,"Low score but decent potential | Pros: $90M potential | Cons: Low score (2/8); Low GDP",4.49,134.82
-17,Viet Nam,4717.29,5600000,84.15,2,Low,63.75,Medium (GDP outside historical range),CAUTIOUS,High,"Low score but decent potential | Pros: $64M potential; Good digital (84%) | Cons: Low score (2/8); Low GDP",3.62,24164.89
-18,Brazil,10310.55,5040700,84.46,2,Low,57.52,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $58M potential; Good digital (84%) | Cons: Low score (2/8)",4.37,5.39
-19,Uganda,1077.91,4200000,8.95,2,Low,46.46,Medium (GDP outside historical range),CAUTIOUS,High,"Low score but decent potential | Pros: $46M potential | Cons: Low score (2/8); Very low GDP; Poor digital (9%)",3.32,3757.26
-20,Bahrain,29653.57,759300,100.0,2,Low,44.62,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $45M potential; Upper-middle income; 100% internet | Cons: Low score (2/8); Very small population",0.92,0.38
-21,Hungary,23292.33,1780000,93.78,2,Low,37.69,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $38M potential; Good digital (94%) | Cons: Low score (2/8); Small population (1.8M)",3.70,365.69
-22,Oman,20285.23,1710000,95.25,2,Low,33.33,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $33M potential; Good digital (95%) | Cons: Low score (2/8); Small population (1.7M)",0.59,0.38
-23,Estonia,31428.35,460000,92.24,2,Low,28.86,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $29M potential; High GDP | Cons: Low score (2/8); Very small population",3.52,0.92
-24,Belarus,8317.63,2075900,94.26,2,Low,25.41,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $25M potential; Good digital (94%) | Cons: Low score (2/8); Small population",5.79,3.25
-25,Slovenia,34301.03,290000,90.76,2,Low,19.65,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $20M potential; High GDP | Cons: Low score (2/8); Very small population",1.97,0.92
-26,Kazakhstan,14154.63,1410000,93.39,2,Low,19.27,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $19M potential; Good digital (93%) | Cons: Low score (2/8); Small population",8.84,468.96
-27,Latvia,23409.08,610000,92.71,2,Low,12.88,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $13M potential; Good digital (93%) | Cons: Low score (2/8); Small population",1.27,0.92
-28,Czechia,31823.31,1335350,87.69,1,Low,82.11,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $82M potential; High GDP | Cons: Low score (1/8); Small population",2.44,23.22
-29,Greece,24626.15,3150000,86.27,1,Low,81.33,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $81M potential; Upper-middle income | Cons: Low score (1/8); Small population",2.74,0.92
-30,Poland,25103.57,1810000,88.59,1,Low,65.82,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $66M potential; Upper-middle income | Cons: Low score (1/8); Small population",3.78,3.98
-31,Uruguay,23906.51,1390000,91.99,1,Low,36.30,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $36M potential; Good digital (92%) | Cons: Low score (1/8); Small population",4.85,40.21
-32,Romania,20080.21,1800000,91.29,1,Low,34.13,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $34M potential; Good digital (91%) | Cons: Low score (1/8); Small population",5.72,4.60
-33,Slovak Republic,25992.67,445000,89.83,1,Low,21.37,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $21M potential; Upper-middle income | Cons: Low score (1/8); Very small population",2.76,0.92
-34,Serbia,13679.21,1410000,87.69,1,Low,18.51,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $19M potential; Good digital (88%) | Cons: Low score (1/8); Small population",4.67,108.21
-35,Montenegro,13263.33,185000,88.88,1,Low,2.18,High (GDP within known range),NO,Very High,"Unfavorable market conditions | Pros: Good digital (89%) | Cons: Low score (1/8); $2.2M potential only; Very small population",3.34,0.92
-36,Bulgaria,17596.02,1290000,82.44,0,Low,22.93,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $23M potential; Good digital (82%) | Cons: Low score (0/8); Small population",2.45,1.81
-37,Ecuador,6874.71,2050000,77.17,0,Low,22.12,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $22M potential; Good digital (77%) | Cons: Low score (0/8); Small population",1.55,1.0
-38,Croatia,24050.44,805000,83.63,0,Low,19.90,High (GDP within known range),CAUTIOUS,High,"Low score but decent potential | Pros: $20M potential; Good digital (84%) | Cons: Low score (0/8); Small population",2.97,0.92
-39,Paraguay,6416.10,535000,81.58,0,Low,5.97,Medium (GDP outside historical range),NO,Very High,"Unfavorable market conditions | Pros: Good digital (82%) | Cons: Low score (0/8); Very small population",3.84,7560.25
-40,Bosnia And Herzegovina,9358.79,345000,86.10,0,Low,3.98,High (GDP within known range),NO,Very High,"Unfavorable market conditions | Pros: Good digital (86%) | Cons: Low score (0/8); Very small population",1.69,1.81
-"""
-
-@st.cache_data(show_spinner="Loading market data...")
+# ── Load data from CSV ─────────────────────────────────────────────────
+@st.cache_data(show_spinner="Loading market expansion data...")
 def load_data():
-    df = pd.read_csv(io.StringIO(_CSV))
-    # Defensive: ensure Country column exists (handles any edge case)
+    csv_path = APP_DIR / "market_expansion_intelligence.csv"
+    if not csv_path.exists():
+        return None
+    df = pd.read_csv(csv_path)
     if "Country" not in df.columns:
         st.error("Data format error: 'Country' column missing.")
         return None
@@ -127,7 +87,7 @@ def load_data():
 
 df = load_data()
 if df is None:
-    st.error("⚠️ market_expansion_priorities_adjusted.csv not found in the app directory.")
+    st.error("⚠️ market_expansion_intelligence.csv not found in the app directory.")
     st.stop()
 
 # ── Page header ────────────────────────────────────────────────────────
@@ -144,8 +104,8 @@ selected = st.selectbox(
 )
 
 row = df[df["Country"] == selected].iloc[0]
-decision = str(row["Expansion_Decision"]).strip()
-cfg = DECISION_CONFIG.get(decision, DECISION_CONFIG["CONSIDER"])
+decision = str(row.get("Expansion_Decision", "MONITOR")).strip().upper()
+cfg = DECISION_CONFIG.get(decision, DECISION_CONFIG["MONITOR"])
 priority = str(row.get("Priority", "N/A"))
 priority_color = PRIORITY_COLOR.get(priority, "#94a3b8")
 
@@ -171,29 +131,29 @@ def kpi(col, val, label, color="#818cf8"):
         <div class="kpi-label">{label}</div>
     </div>""", unsafe_allow_html=True)
 
-kpi(c1, f"#{int(row['Rank'])}", "Global Rank")
+rank_val = int(row["Rank"]) if "Rank" in row and pd.notna(row["Rank"]) else "N/A"
+score_val = f"{row['Market_Score']:.1f}/100" if "Market_Score" in row else "N/A"
+sales_y1 = f"${row['Est_Sales_Year1_M']:.1f}M" if "Est_Sales_Year1_M" in row else "N/A"
+sales_y3 = f"${row['Est_Sales_Year3_M']:.1f}M" if "Est_Sales_Year3_M" in row else "N/A"
+urgency = str(row.get("Action_Urgency", "N/A"))
+
+kpi(c1, f"#{rank_val}", "Global Rank")
 kpi(c2, priority, "Priority Tier", priority_color)
-kpi(c3, f"{int(row['Market_Score'])}/8", "Market Score")
-kpi(c4, f"${row['Estimated_Annual_Sales_M']:.0f}M", "Est. Annual Sales")
-risk = str(row.get("Risk_Level", "N/A"))
-risk_color = {"Low": "#34d399", "Low-Medium": "#34d399", "Medium": "#fbbf24",
-              "Medium-High": "#fb923c", "High": "#fb923c", "Very High": "#ef4444"}.get(risk, "#94a3b8")
-kpi(c5, risk, "Risk Level", risk_color)
+kpi(c3, score_val, "Market Score (0–100)")
+kpi(c4, sales_y1, "Est. Year-1 Sales")
+kpi(c5, sales_y3, "Est. Year-3 Sales")
 
 # ── Decision Reason ────────────────────────────────────────────────────
 st.markdown('<div class="section-header">📋 Decision Analysis</div>', unsafe_allow_html=True)
 
 reason_raw = str(row.get("Decision_Reason", ""))
-lines = reason_raw.split("\n")
-primary = lines[0].strip() if lines else ""
-pros_line = next((l for l in lines if "✓ Pros:" in l), "")
-cons_line = next((l for l in lines if "✗ Cons:" in l), "")
+lines = [l.strip() for l in reason_raw.split("\n") if l.strip()]
+primary = lines[0] if lines else ""
+pros_items = [l.replace("✓", "").strip() for l in lines if l.startswith("✓")]
+cons_items = [l.replace("⚠️", "").strip() for l in lines if l.startswith("⚠️")]
 
-pros_items = pros_line.replace("✓ Pros:", "").strip().split(";") if pros_line else []
-cons_items = cons_line.replace("✗ Cons:", "").strip().split(";") if cons_line else []
-
-pros_html = "".join(f'<div class="pro">✓ {p.strip()}</div>' for p in pros_items if p.strip())
-cons_html = "".join(f'<div class="con">✗ {c.strip()}</div>' for c in cons_items if c.strip())
+pros_html = "".join(f'<div class="pro">✓ {p}</div>' for p in pros_items)
+cons_html = "".join(f'<div class="con">⚠️ {c}</div>' for c in cons_items)
 
 st.markdown(f"""
 <div class="reason-box">
@@ -208,12 +168,13 @@ st.markdown(f"""
 # ── Market Metrics ─────────────────────────────────────────────────────
 st.markdown('<div class="section-header">📊 Market Metrics</div>', unsafe_allow_html=True)
 
-gdp = row.get("GDP", 0)
-pop = row.get("Population", 0)
-internet = row.get("Internet", 0)
-inflation = row.get("Inflation", 0)
-exchange = row.get("ExchangeRate", 0)
-confidence = row.get("Confidence", "N/A")
+gdp        = row.get("GDP", 0)
+pop        = row.get("Population", 0)
+internet   = row.get("Internet", 0)
+inflation  = row.get("Inflation", 0)
+exchange   = row.get("ExchangeRate", 0)
+pen_rate   = row.get("Penetration_Rate", 0)
+risk_pen   = row.get("Risk_Penalty", 1.0)
 
 st.markdown(f"""
 <div class="metric-row">
@@ -238,8 +199,12 @@ st.markdown(f"""
         <div class="chip-lab">Exchange Rate (USD)</div>
     </div>
     <div class="metric-chip">
-        <div class="chip-val" style="font-size:0.95rem;">{confidence.split(" ")[0]}</div>
-        <div class="chip-lab">Forecast Confidence</div>
+        <div class="chip-val">{pen_rate:.1f}%</div>
+        <div class="chip-lab">Penetration Rate</div>
+    </div>
+    <div class="metric-chip">
+        <div class="chip-val">{risk_pen:.2f}</div>
+        <div class="chip-lab">Risk Penalty (1=low)</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -250,7 +215,6 @@ st.markdown('<div class="section-header">🌐 Global Comparison</div>', unsafe_a
 col1, col2 = st.columns(2)
 
 with col1:
-    # All countries bar chart — highlight selected
     chart_df = df.copy().sort_values("Market_Score", ascending=True).tail(20)
     chart_df["_color"] = chart_df["Country"].apply(
         lambda x: cfg["color"] if x == selected else "rgba(99,102,241,0.5)"
@@ -260,55 +224,85 @@ with col1:
         y=chart_df["Country"],
         orientation="h",
         marker_color=chart_df["_color"],
-        text=chart_df["Market_Score"],
+        text=chart_df["Market_Score"].round(1),
         textposition="outside",
     ))
     fig1.update_layout(title="Top 20 Markets by Score (highlighted: selected)",
-                       xaxis_title="Market Score (0–8)")
+                       xaxis_title="Market Score (0–100)")
     style_fig(fig1, 480)
     st.plotly_chart(fig1, use_container_width=True)
 
 with col2:
-    # Priority distribution donut
     pc = df["Priority"].value_counts().reset_index()
     pc.columns = ["Priority", "Count"]
-    color_map = {"Very High": "#10b981", "High": "#34d399", "Medium": "#fbbf24", "Low": "#fb923c"}
+    color_map = {
+        "Very High": "#10b981", "High": "#34d399",
+        "Medium": "#fbbf24", "Low": "#fb923c", "Very Low": "#ef4444",
+    }
     fig2 = px.pie(pc, values="Count", names="Priority",
                   title="Priority Distribution — All Countries",
-                  hole=0.5,
-                  color="Priority",
-                  color_discrete_map=color_map)
+                  hole=0.5, color="Priority", color_discrete_map=color_map)
     fig2.update_traces(textinfo="label+percent")
     style_fig(fig2, 380)
     st.plotly_chart(fig2, use_container_width=True)
 
 # ── Expansion decision distribution ───────────────────────────────────
 st.markdown('<div class="section-header">🗺️ Expansion Decision Overview</div>', unsafe_allow_html=True)
-dec_df = df.copy()
-dec_df["Country_display"] = dec_df["Country"] + " (" + dec_df["Expansion_Decision"] + ")"
 fig3 = px.bar(
-    dec_df.sort_values("Estimated_Annual_Sales_M", ascending=False).head(25),
-    x="Country", y="Estimated_Annual_Sales_M",
+    df.sort_values("Est_Sales_Year1_M", ascending=False).head(25),
+    x="Country", y="Est_Sales_Year1_M",
     color="Expansion_Decision",
-    title="Top 25 Countries by Estimated Annual Sales ($M)",
-    labels={"Estimated_Annual_Sales_M": "Est. Sales ($M)", "Expansion_Decision": "Decision"},
+    title="Top 25 Countries by Estimated Year-1 Sales ($M)",
+    labels={"Est_Sales_Year1_M": "Est. Year-1 Sales ($M)", "Expansion_Decision": "Decision"},
     color_discrete_map={
-        "STRONG YES": "#10b981", "YES": "#34d399",
-        "CONSIDER": "#fbbf24", "CAUTIOUS": "#fb923c", "NO": "#ef4444",
+        "EXPAND NOW": "#10b981", "HIGH PRIORITY": "#34d399",
+        "PILOT FIRST": "#fbbf24", "CONSIDER WITH CAUTION": "#fb923c",
+        "MONITOR": "#60a5fa", "WAIT": "#94a3b8", "AVOID": "#ef4444",
     },
 )
 fig3.update_layout(xaxis_tickangle=-40)
 style_fig(fig3, 420)
 st.plotly_chart(fig3, use_container_width=True)
 
+# ── Risk vs Reward scatter ─────────────────────────────────────────────
+st.markdown('<div class="section-header">⚖️ Risk vs Reward Matrix</div>', unsafe_allow_html=True)
+if "Risk_Penalty" in df.columns:
+    scatter_df = df.copy()
+    scatter_df["Risk_Category"] = scatter_df["Risk_Penalty"].apply(
+        lambda p: "Low Risk" if p > 0.85 else ("Medium Risk" if p > 0.7 else "High Risk")
+    )
+    fig4 = px.scatter(
+        scatter_df,
+        x="Market_Score",
+        y="Est_Sales_Year1_M",
+        color="Risk_Category",
+        size="Est_Sales_Year1_M",
+        hover_name="Country",
+        title="Risk vs Reward (bubble = Year-1 sales potential)",
+        log_y=True,
+        color_discrete_map={"Low Risk": "#10b981", "Medium Risk": "#fbbf24", "High Risk": "#ef4444"},
+        labels={"Market_Score": "Market Score (0–100)", "Est_Sales_Year1_M": "Year-1 Sales ($M)"},
+    )
+    style_fig(fig4, 420)
+    st.plotly_chart(fig4, use_container_width=True)
+
 # ── Full table ─────────────────────────────────────────────────────────
 st.markdown('<div class="section-header">📋 All Countries — Ranked</div>', unsafe_allow_html=True)
-show = df[["Rank","Country","Market_Score","Priority","Expansion_Decision",
-           "Risk_Level","Estimated_Annual_Sales_M","GDP","Internet"]].copy()
-show["Estimated_Annual_Sales_M"] = show["Estimated_Annual_Sales_M"].round(1)
-show["GDP"] = show["GDP"].round(0).astype(int)
-show["Internet"] = show["Internet"].round(1)
-st.dataframe(show, use_container_width=True, height=380)
-st.download_button("📥 Download Full Rankings CSV",
-                   df.to_csv(index=False),
-                   "market_expansion_priorities_adjusted.csv")
+show_cols = [c for c in [
+    "Rank", "Country", "Market_Score", "Priority", "Expansion_Decision",
+    "Action_Urgency", "Est_Sales_Year1_M", "Est_Sales_Year3_M",
+    "GDP", "Population", "Internet", "Inflation",
+] if c in df.columns]
+show = df[show_cols].copy()
+if "Est_Sales_Year1_M" in show.columns:
+    show["Est_Sales_Year1_M"] = show["Est_Sales_Year1_M"].round(2)
+if "Est_Sales_Year3_M" in show.columns:
+    show["Est_Sales_Year3_M"] = show["Est_Sales_Year3_M"].round(2)
+if "Market_Score" in show.columns:
+    show["Market_Score"] = show["Market_Score"].round(1)
+st.dataframe(show, use_container_width=True, height=400)
+st.download_button(
+    "📥 Download Full Rankings CSV",
+    df.to_csv(index=False),
+    "market_expansion_intelligence.csv",
+)

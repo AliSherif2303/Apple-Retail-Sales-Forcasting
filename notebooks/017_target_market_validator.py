@@ -25,8 +25,8 @@ print("="*80)
 
 # Load data
 print("\n📂 Loading data...")
-sales_df = load_csv_safe('../data/processed/merged_city_sales_data.csv')
-country_df = load_csv_safe('../data/processed/merged_data_with_population.csv')
+sales_df = load_csv_safe('merged_city_sales_data.csv')
+country_df = load_csv_safe('merged_data_with_population.csv')
 
 print(f"✓ Loaded {len(sales_df):,} transactions")
 print(f"✓ Loaded {len(country_df)} potential markets")

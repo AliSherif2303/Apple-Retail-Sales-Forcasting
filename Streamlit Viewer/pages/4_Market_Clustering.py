@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 st.set_page_config(
-    page_title="Market Clustering",
+    page_title="Market Expansion",
     page_icon="🗺️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -59,7 +59,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 </style>"""
 st.markdown(CSS, unsafe_allow_html=True)
 
-st.markdown("# 🗺️ Market Clustering — Store Expansion Prediction")
+st.markdown("# 🗺️ Market Expansion — Store Expansion Prediction")
 st.markdown("*Predicts how many additional stores each city needs using ML models.*")
 
 def _kpi(v, l):
