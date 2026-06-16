@@ -18,7 +18,11 @@ st.set_page_config(
 APP_DIR = Path(__file__).resolve().parent.parent
 
 # ── Styling ────────────────────────────────────────────────────────────
-PALETTE = ["#818cf8","#c084fc","#f472b6","#34d399","#fbbf24","#60a5fa"]
+CHART_BG   = "rgba(28,28,30,0.6)"
+PAPER_BG   = "rgba(0,0,0,0)"
+FONT_COLOR = "#E1E1E6"
+GRID_COLOR = "rgba(0,240,255,0.10)"
+PALETTE    = ["#00F0FF","#39FF14","#FF5252","#5E5CE6","#FFFFFF","#00B4FF","#A0A0A5","#FFD60A"]
 
 DECISION_CONFIG = {
     "EXPAND NOW":            {"color": "#10b981", "bg": "rgba(16,185,129,0.15)",  "border": "rgba(16,185,129,0.5)",  "emoji": "🚀"},
@@ -37,35 +41,37 @@ PRIORITY_COLOR = {
 
 def style_fig(fig, h=400):
     fig.update_layout(
-        paper_bgcolor="rgba(10,10,20,0)", plot_bgcolor="rgba(10,10,20,0)",
-        font=dict(family="Inter, sans-serif", color="#cbd5e1", size=12),
+        paper_bgcolor=PAPER_BG, plot_bgcolor=CHART_BG,
+        font=dict(family="Inter, sans-serif", color=FONT_COLOR, size=12),
         height=h, margin=dict(l=16, r=16, t=42, b=16),
-        legend=dict(bgcolor="rgba(15,15,30,0.7)"),
-        xaxis=dict(gridcolor="rgba(99,102,241,0.12)"),
-        yaxis=dict(gridcolor="rgba(99,102,241,0.12)"),
+        legend=dict(bgcolor="rgba(28,28,30,0.85)", bordercolor="rgba(0,240,255,0.3)", borderwidth=1),
+        xaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"),
+        yaxis=dict(gridcolor=GRID_COLOR, zerolinecolor="rgba(0,240,255,0.2)"),
         colorway=PALETTE,
     )
 
 CSS = """<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 40%, #0a0f1a 100%); }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #0d0d1a 0%, #111128 100%); }
-.kpi-card { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08));
-  border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 20px 24px; text-align: center; }
-.kpi-value { font-size: 1.8rem; font-weight: 800; color: #818cf8; }
-.kpi-label { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
-.section-header { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin: 28px 0 12px 0;
-  padding-bottom: 8px; border-bottom: 2px solid rgba(99,102,241,0.3); }
+.stApp { background: #000000; }
+[data-testid="stSidebar"] { background: #1C1C1E; border-right: 1px solid rgba(0,240,255,0.2); }
+.kpi-card { background: #1C1C1E;
+  border: 1px solid rgba(0,240,255,0.35); border-radius: 16px; padding: 20px 24px; text-align: center;
+  transition: transform 0.2s ease; }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,240,255,0.2); }
+.kpi-value { font-size: 1.8rem; font-weight: 800; color: #00F0FF; }
+.kpi-label { font-size: 0.82rem; color: #E1E1E6; margin-top: 4px; }
+.section-header { font-size: 1.15rem; font-weight: 700; color: #FFFFFF; margin: 28px 0 12px 0;
+  padding-bottom: 8px; border-bottom: 2px solid rgba(0,240,255,0.4); }
 .decision-banner { border-radius: 20px; padding: 28px 32px; text-align: center; margin: 24px 0; }
 .decision-title { font-size: 2.4rem; font-weight: 900; letter-spacing: 2px; }
 .decision-sub { font-size: 0.95rem; margin-top: 8px; opacity: 0.8; }
-.reason-box { background: rgba(15,15,30,0.7); border-radius: 14px; padding: 20px 24px;
-  border: 1px solid rgba(99,102,241,0.2); margin-top: 12px; }
-.pro { color: #34d399; font-size: 0.9rem; margin: 4px 0; }
-.con { color: #f87171; font-size: 0.9rem; margin: 4px 0; }
+.reason-box { background: #1C1C1E; border-radius: 14px; padding: 20px 24px;
+  border: 1px solid rgba(0,240,255,0.3); margin-top: 12px; }
+.pro { color: #39FF14; font-size: 0.9rem; margin: 4px 0; }
+.con { color: #FF5252; font-size: 0.9rem; margin: 4px 0; }
 .metric-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-.metric-chip { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+.metric-chip { background: #1C1C1E; border: 1px solid rgba(0,240,255,0.3);
   border-radius: 10px; padding: 10px 18px; min-width: 120px; }
 .chip-val { font-size: 1.2rem; font-weight: 700; color: #00F0FF; }
 .chip-lab { font-size: 0.72rem; color: #E1E1E6; margin-top: 2px; }
@@ -124,7 +130,7 @@ st.markdown(f"""
 # ── KPI Cards ──────────────────────────────────────────────────────────
 c1, c2, c3, c4, c5 = st.columns(5)
 
-def kpi(col, val, label, color="#818cf8"):
+def kpi(col, val, label, color="#00F0FF"):
     col.markdown(f"""
     <div class="kpi-card">
         <div class="kpi-value" style="color:{color};">{val}</div>
@@ -217,7 +223,7 @@ col1, col2 = st.columns(2)
 with col1:
     chart_df = df.copy().sort_values("Market_Score", ascending=True).tail(20)
     chart_df["_color"] = chart_df["Country"].apply(
-        lambda x: cfg["color"] if x == selected else "rgba(99,102,241,0.5)"
+        lambda x: cfg["color"] if x == selected else "rgba(0,240,255,0.2)"
     )
     fig1 = go.Figure(go.Bar(
         x=chart_df["Market_Score"],
