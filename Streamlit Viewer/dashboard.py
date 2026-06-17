@@ -524,10 +524,16 @@ with tab3:
 
     # Price distribution
     st.markdown('<div class="section-header">\U0001F4B2 Price Distribution by Category</div>', unsafe_allow_html=True)
+    
+    # Sample data to prevent browser lag with massive datasets
+    box_df = fdf.dropna(subset=["category_name","price"])
+    if len(box_df) > 50000:
+        box_df = box_df.sample(50000, random_state=42)
+        
     fig_price = px.box(
-        fdf.dropna(subset=["category_name","price"]),
+        box_df,
         x="category_name", y="price", color="category_name",
-        title="Price Distribution per Category",
+        title="Price Distribution per Category (Sampled for Performance)",
         color_discrete_sequence=PALETTE,
     )
     fig_price.update_xaxes(tickangle=30)
