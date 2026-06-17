@@ -523,30 +523,17 @@ with tab3:
     st.plotly_chart(fig_tp, use_container_width=True)
 
     # Price distribution
-    col3, col4 = st.columns(2)
-    with col3:
-        st.markdown('<div class="section-header">\U0001F4B2 Price Distribution by Category</div>', unsafe_allow_html=True)
-        fig_price = px.box(
-            fdf.dropna(subset=["category_name","price"]),
-            x="category_name", y="price", color="category_name",
-            title="Price Distribution per Category",
-            color_discrete_sequence=PALETTE,
-        )
-        fig_price.update_xaxes(tickangle=30)
-        fig_price.update_layout(showlegend=False)
-        style_fig(fig_price, 400)
-        st.plotly_chart(fig_price, use_container_width=True)
-
-    with col4:
-        st.markdown('<div class="section-header">\U0001F4E6 Quantity Distribution</div>', unsafe_allow_html=True)
-        fig_qty = px.histogram(
-            fdf, x="quantity", nbins=10,
-            title="Quantity per Transaction",
-            color_discrete_sequence=["#818cf8"],
-        )
-        fig_qty.update_traces(hovertemplate="Qty: %{x}<br>Count: %{y}<extra></extra>")
-        style_fig(fig_qty, 400)
-        st.plotly_chart(fig_qty, use_container_width=True)
+    st.markdown('<div class="section-header">\U0001F4B2 Price Distribution by Category</div>', unsafe_allow_html=True)
+    fig_price = px.box(
+        fdf.dropna(subset=["category_name","price"]),
+        x="category_name", y="price", color="category_name",
+        title="Price Distribution per Category",
+        color_discrete_sequence=PALETTE,
+    )
+    fig_price.update_xaxes(tickangle=30)
+    fig_price.update_layout(showlegend=False)
+    style_fig(fig_price, 400)
+    st.plotly_chart(fig_price, use_container_width=True)
 
     # Promo effect per category
     st.markdown('<div class="section-header">\U0001F3AF Promo Impact by Category</div>', unsafe_allow_html=True)
