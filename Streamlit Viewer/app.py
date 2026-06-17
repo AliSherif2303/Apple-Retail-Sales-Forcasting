@@ -18,21 +18,7 @@ st.set_page_config(
 
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ─── Sidebar branding ────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(f"""
-    <div style="text-align:center; padding: 16px 0;">
-        <span style="font-size:2.5rem; filter:drop-shadow(0 0 18px {ACCENT});">🍎</span>
-        <div style="font-size:1.4rem; font-weight:800; color:{ACCENT}; margin-top:8px;">
-            Apple Sales Intelligence
-        </div>
-        <div style="font-size:0.8rem; color:#A0A0A5; margin-top:4px;">
-            Multi-Page Analytics Platform
-        </div>
-    </div>
-    <hr style="border-color: rgba(0,240,255,0.3);">
-    """, unsafe_allow_html=True)
-    st.markdown("👈 **Select a page** from the sidebar above.")
+
 
 # ─── Home page content ───────────────────────────────────────────────
 st.markdown(f"""
