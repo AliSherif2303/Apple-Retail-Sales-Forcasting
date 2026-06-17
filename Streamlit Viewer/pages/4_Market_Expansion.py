@@ -204,11 +204,9 @@ total_new = recs['predicted_additional'].sum()
 cities_need = (recs['predicted_additional'] > 0).sum()
 cities_ok = len(recs) - cities_need
 
-c1, c2, c3, c4 = st.columns(4)
+c1, c2 = st.columns(2)
 with c1: _kpi(best_model_name, "Best Model")
 with c2: _kpi(str(total_new), "New Stores Recommended")
-with c3: _kpi(f"{cities_need}/{len(recs)}", "Cities Need Expansion")
-with c4: _kpi(str(cities_ok), "Cities at Optimal")
 
 st.markdown("")
 
