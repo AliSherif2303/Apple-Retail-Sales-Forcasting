@@ -13,6 +13,26 @@ An end-to-end **retail sales intelligence system** for Apple's global store netw
 
 ---
 
+## 📥 Download Data Sources
+
+> **⚠️ Before running any notebooks or scripts, download the required data files first.**
+> The large CSV and database files are hosted on GitHub Releases (not tracked in the repository).
+
+| File | Description | Size | Download |
+|------|-------------|------|----------|
+| `RAW DATA.zip` | Original raw Kaggle sales, products, stores & warranty CSVs | ~12.6 MB | [⬇️ Download](https://github.com/AliSherif2303/Apple-Retail-Sales-Forcasting/releases/latest/download/RAW+DATA.zip) |
+| `DATA.zip` | Processed & enriched datasets (v1 → v3 pipeline outputs) | ~85.2 MB | [⬇️ Download](https://github.com/AliSherif2303/Apple-Retail-Sales-Forcasting/releases/latest/download/DATA.zip) |
+| `cleaned_apple_sales.zip` | Final production dataset used by the Streamlit dashboard & models | ~434 MB | [⬇️ Download](https://github.com/AliSherif2303/Apple-Retail-Sales-Forcasting/releases/latest/download/cleaned_apple_sales.zip) |
+
+After downloading, extract the zip files and place their contents under the `data/` directory:
+```
+data/
+├── raw/                  ← contents of RAW DATA.zip
+└── processed/            ← contents of DATA.zip & cleaned_apple_sales.zip
+```
+
+---
+
 ## 📁 Repository Structure
 
 ```
